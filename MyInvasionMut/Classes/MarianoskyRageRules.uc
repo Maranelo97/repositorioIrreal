@@ -111,7 +111,7 @@ function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> dam
     local Monster M;
     local Controller C, RevivedTeammate;
     local int BonusScore;
-    local string BroadcastMsg;
+    local PlayerReplicationInfo RevivedPRI;
 
     if (NextGameRules != None && NextGameRules.PreventDeath(Killed, Killer, damageType, HitLocation))
     {
@@ -157,12 +157,10 @@ function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> dam
         // Revive automaticamente a un companero (jugador o bot) caido durante la oleada
         RevivedTeammate = ReviveOneFallenTeammate();
 
-        BroadcastMsg = "EL REY CTHULHU FUE ABATIDO! Suelta Double Damage y +25 de Escudo para el equipo!";
-        if (RevivedTeammate != None && RevivedTeammate.PlayerReplicationInfo != None)
-        {
-            BroadcastMsg = BroadcastMsg $ " (" $ RevivedTeammate.PlayerReplicationInfo.PlayerName $ " ha vuelto a la batalla!)";
-        }
-        Level.Game.Broadcast(None, BroadcastMsg, 'CriticalEvent');
+        // Mensaje en varias lineas (titulo, recompensas y, si hubo, el companero revivido)
+        if (RevivedTeammate != None)
+            RevivedPRI = RevivedTeammate.PlayerReplicationInfo;
+        Level.Game.BroadcastLocalizedMessage(class'CthulhuBossMessage', 2, RevivedPRI);
     }
 
     return false;
