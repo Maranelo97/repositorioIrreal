@@ -20,7 +20,8 @@ function InfectController(Controller TargetController)
     local Invasion InvGame;
 
     InvGame = Invasion(Level.Game);
-    if (InvGame == None || !InvGame.bWaveInProgress || InvGame.WaveNum <= 8
+    // WaveNum empieza en 0: el valor 8 es la oleada 9 que se ve en pantalla.
+    if (InvGame == None || !InvGame.bWaveInProgress || InvGame.WaveNum < 8
         || TargetController == None || !TargetController.bIsPlayer
         || TargetController.Pawn == None || TargetController.Pawn.Health <= 0
         || TargetController.PlayerReplicationInfo == None)
@@ -187,7 +188,7 @@ function Timer()
     {
         CureAllInfected();
         CurrentWaveNum = InvGame.WaveNum;
-        if (CurrentWaveNum > 8 && FRand() < InfectionChance)
+        if (CurrentWaveNum >= 8 && FRand() < InfectionChance)
             SpawnEliteKrall(InvGame);
     }
 
