@@ -254,9 +254,9 @@ defaultproperties
     BotsPerPlayer=3
     MaxBots=24
     BotsPerPlayerText="Bots por jugador"
-    BotsPerPlayerDesc="Cantidad de bots que se agregan por cada jugador real conectado (de 0 a 8)."
+    BotsPerPlayerDesc="Cantidad de bots que se agregan por cada jugador real conectado (de 0 a 8) [por defecto: 3]"
     MaxBotsText="Maximo de bots"
-    MaxBotsDesc="Tope de bots en la partida, sin importar cuantos jugadores haya (de 0 a 32)."
+    MaxBotsDesc="Tope de bots en la partida, sin importar cuantos jugadores haya (de 0 a 32) [por defecto: 24]"
     GroupName="BotCountMut"
     FriendlyName="[Irreal] Necesitamos mas BOTS"
     Description="Ajusta dinamicamente la cantidad de bots segun los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un maximo (24 por defecto). Las dos se pueden cambiar en Configurar mutadores."
