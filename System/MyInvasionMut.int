@@ -9,6 +9,7 @@ Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltim
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="[Irreal] Six Seven||En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="[Irreal] ¿Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="[Irreal] Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutRadarMejorado,Description="[Irreal] Sigan viendo||Reemplaza los puntos del radar de Invasión por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo más grande y Fer (en Cuiden a Fer!) en magenta. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Además, cada monstruo o jugador que está en otro piso muestra una línea vertical: si está arriba, el punto queda sobre la línea; si está abajo, el punto cuelga de la línea. Cuanto más larga la línea, más diferencia de altura. Cada parte se puede desactivar en Configurar mutadores.")
 
 [MutInvasionPause]
 FriendlyName="[Irreal] Control de plagas FV"
@@ -49,3 +50,13 @@ Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que apa
 [MutCuidenAFer]
 FriendlyName="[Irreal] Cuiden a Fer!"
 Description="Cada oleada de Invasión un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, munición o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos más BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasión: Armas últimas y Salto cuádruple (QuadJump). Bloquea partidas con otros mutadores."
+
+[MutRadarMejorado]
+FriendlyName="[Irreal] Sigan viendo"
+ColoredDotsText="Puntos de colores"
+ColoredDotsDesc="Puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; los bots quedan tenues, el Rey Cthulhu aparece en rojo y Fer en magenta. Si se desactiva, se ven los puntos normales del radar."
+ShowHeightLinesText="Líneas de altura"
+ShowHeightLinesDesc="Muestra una línea vertical en cada monstruo o jugador que está en otro piso."
+MinHeightDiffText="Diferencia mínima de altura"
+MinHeightDiffDesc="Diferencia de altura (en unidades, pies contra pies) a partir de la cual se dibuja la línea. Un piso suele estar a entre 200 y 500 unidades. Más bajo: más sensible."
+Description="Reemplaza los puntos del radar de Invasión por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo más grande y Fer (en Cuiden a Fer!) en magenta. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Además, cada monstruo o jugador que está en otro piso muestra una línea vertical: si está arriba, el punto queda sobre la línea; si está abajo, el punto cuelga de la línea. Cuanto más larga la línea, más diferencia de altura. Cada parte se puede desactivar en Configurar mutadores."
