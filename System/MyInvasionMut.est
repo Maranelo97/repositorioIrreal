@@ -3,7 +3,7 @@ Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutCuidenAFer,De
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionPause,Description="[Irreal] Control de plagas FV||Pausa el inicio de la siguiente oleada en Invasión y otorga +50% de velocidad durante la pausa para recolectar ítems. El host o un admin inicia la oleada con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave).")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInstantRespawn,Description="[Irreal] Es todo muy irreal||Elimina el cooldown de los ítems del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a ítems que los jugadores dejaron caer.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutMarianoskyRage,Description="[Irreal] Marianosky's rage||25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamaño, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos daño, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y más cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un compañero caído.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="[Irreal] Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). También silencia los mensajes de voz normales de los bots (se puede cambiar en Configurar mutadores).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="[Irreal] Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). También silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="[Irreal] Necesitamos más BOTS||Ajusta dinámicamente la cantidad de bots según los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un máximo (24 por defecto). Las dos se pueden cambiar en Configurar mutadores.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="[Irreal] Invasión: Armas últimas||Un único punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantáneo. Los demás puntos de esas armas quedan vacíos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="[Irreal] Six Seven||En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos.")
@@ -27,7 +27,17 @@ Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarL
 FriendlyName="[Irreal] Chat-doka Bots"
 SilenceBotVoiceText="Silenciar los mensajes de voz de los bots"
 SilenceBotVoiceDesc="Saca los mensajes de voz normales de los bots (por ejemplo I've got your back), así en el chat solo quedan las frases de Chat-doka. Los bots siguen obedeciendo órdenes, pero no responden en voz alta."
-Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). También silencia los mensajes de voz normales de los bots (se puede cambiar en Configurar mutadores)."
+RandomPhrasesText="Frases al azar"
+RandomPhrasesDesc="Frases de la lista general: una cada tantos segundos y algunas al matar, morir, quedar con poca vida y al empezar o terminar una oleada. Si se desactiva, solo quedan las reacciones."
+DeathTauntsText="Burlas al morir un jugador"
+DeathTauntsDesc="Un bot se burla por nombre del jugador que muere."
+CthulhuReactionsText="Reacciones al Rey Cthulhu"
+CthulhuReactionsDesc="Un bot reacciona cuando aparece el Rey Cthulhu."
+UltimateKillReactionsText="Festejos con Redeemer e Ion Painter"
+UltimateKillReactionsDesc="Un bot festeja cuando mata con el Redeemer o el Ion Painter."
+PhraseIntervalText="Segundos entre frases al azar"
+PhraseIntervalDesc="Cada cuántos segundos un bot dice una frase al azar; también es el tiempo mínimo entre las frases de la lista general (de 5 a 300)."
+Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). También silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores."
 
 [MutNeedMoreBots]
 FriendlyName="[Irreal] Necesitamos más BOTS"
