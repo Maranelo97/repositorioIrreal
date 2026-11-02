@@ -1,0 +1,61 @@
+# Notas técnicas de MyInvasionMut
+
+Cosas que conviene saber antes de tocar el código o los textos del paquete.
+
+## Acentos y codificación
+
+UT2004 es de 2004 y no entiende UTF-8. Todo el texto que llega al juego tiene que estar en Latin-1 (Windows "ANSI").
+
+### Archivos de idioma (`System/*.int`, `System/*.est`)
+
+- Se guardan en **Latin-1 / Windows-1252, sin BOM**. Si se guardan en UTF-8, los acentos aparecen rotos en el juego (por ejemplo `Ã¡` en lugar de `á`).
+- GitHub y algunos editores los muestran con caracteres raros porque esperan UTF-8. Es normal: el archivo está bien para el juego.
+- En VS Code: abajo a la derecha, "Reopen with Encoding" → "Western (Windows 1252)" antes de editar.
+- El `.est` es una copia idéntica del `.int` (el juego en español lee el `.est`, en inglés el `.int`). Al cambiar uno, copiar el otro.
+
+### Fuentes: qué caracteres faltan
+
+Revisamos las fuentes del juego. Casi todas tienen todos los caracteres del español, salvo estas cuatro:
+
+| Fuente | Dónde se usa | Le faltan |
+|---|---|---|
+| `UT2003Fonts.FontEurostile37` | Mensajes grandes del centro de la pantalla (Rey Cthulhu, Kayros, Fer) | `Á Í Ó Ú ¡ ü Ü` |
+| `UT2003Fonts.FontNeuzeit37` | (no la usamos) | `Á Í Ó Ú ¡ ü Ü` |
+| `UT2003Fonts.FontLarge1024x768` | Probablemente menús en resoluciones altas | `Á Í Ó Ú ¡ ü Ü` |
+| `UT2003Fonts.jFontLarge1024x768` | Probablemente menús en resoluciones altas | `Á Í Ó Ú ¡ ü Ü` |
+
+Sí tienen `É`, `Ñ`, `¿` y todas las minúsculas con acento (`á é í ó ú ñ`).
+
+Por eso:
+
+- **Nombres y descripciones del menú:** usar minúsculas con acento y `¿` sin problema. Evitar `¡` y las mayúsculas `Á Í Ó Ú` (por eso el mutador se llama "Cuiden a Fer!" sin `¡`).
+- **Mensajes grandes (todo en mayúsculas):** solo `É`, `Ñ` y `¿`. Por ejemplo "TENÉS MUCHO KAYROS" funciona, pero "ATENCIÓN" mostraría un hueco en la `Ó`. Si hace falta otra letra, `UT2003Fonts.FontEurostile24` tiene todas (es un poco más chica).
+- **Chat de los bots:** usa fuentes completas; `¡`, `¿` y `Ñ` ya funcionan.
+
+### Acentos dentro del código (`.uc`)
+
+- Los `.uc` se guardan en **UTF-8**, pero el compilador los lee como Latin-1. Una `á` escrita directamente en un texto entre comillas sale rota en el juego.
+- En el código, escribir los caracteres especiales con `Chr()`:
+
+  | Carácter | Código | Carácter | Código |
+  |---|---|---|---|
+  | `á` | `Chr(225)` | `Á` | `Chr(193)` |
+  | `é` | `Chr(233)` | `É` | `Chr(201)` |
+  | `í` | `Chr(237)` | `Í` | `Chr(205)` |
+  | `ó` | `Chr(243)` | `Ó` | `Chr(211)` |
+  | `ú` | `Chr(250)` | `Ú` | `Chr(218)` |
+  | `ñ` | `Chr(241)` | `Ñ` | `Chr(209)` |
+  | `¿` | `Chr(191)` | `¡` | `Chr(161)` |
+
+  Ejemplo: `"TEN" $ Chr(201) $ "S MUCHO KAYROS"`.
+- En `defaultproperties` no se puede usar `Chr()`. Si un texto por defecto necesita acentos, asignarlo en `PostBeginPlay` (como hace `MutChatDokaBots` con `Phrases[6]` y `Phrases[36]`) o dejarlo sin acentos.
+- Los `FriendlyName` y `Description` de las clases quedan **sin acentos** a propósito: son solo el texto de respaldo si falta el `.int`. Lo que se ve en el menú sale del `.int`/`.est`.
+- En los comentarios del código, mejor sin acentos para no mezclar codificaciones.
+
+## Otras cosas a tener en cuenta
+
+- **Oleadas:** `Invasion.WaveNum` empieza en 0; en pantalla se muestra `WaveNum + 1`. La oleada 9 es `WaveNum == 8`.
+- **Nombres en el menú:** la lista de mutadores se ordena alfabéticamente sin distinguir mayúsculas. Con el prefijo `[Irreal]` los nuestros quedan juntos al principio. El juego guarda la selección por nombre de clase, así que cambiar el nombre visible no rompe configuraciones guardadas. Los nombres tienen que ser únicos.
+- **Recursos:** el paquete se compila solo con código. Usa recursos del juego en lugar de recursos propios: la skin original del WarLord (con brillo violeta/rojo), el sonido `SkaarjPack_rc.WarLord.laugh1WL` y la fuente `UT2003Fonts.FontEurostile37`.
+- **Tecla para la siguiente oleada (Control de plagas FV):** el comando es `mutate nextwave`. No conviene asignarlo a la `Q`, que por defecto es el translocator. Por ejemplo: `set input H mutate nextwave` en la consola (queda guardado).
+- **Instalar una versión nueva:** todos (host y clientes) tienen que tener los mismos `MyInvasionMut.u`, `.ucl`, `.int` y `.est` en la carpeta `System`, con el juego cerrado. Si no, aparece el error de versión del paquete no coincidente.
