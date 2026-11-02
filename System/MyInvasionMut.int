@@ -8,7 +8,7 @@ Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="[Irreal] Invasión: Armas últimas||Un único punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantáneo. Los demás puntos de esas armas quedan vacíos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="[Irreal] Six Seven||En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="[Irreal] ¿Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="[Irreal] Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="[Irreal] Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada.")
 
 [MutInvasionPause]
 FriendlyName="[Irreal] Control de plagas FV"
@@ -44,7 +44,7 @@ Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Ka
 
 [MutLeTransmitoTodoAMiBB]
 FriendlyName="[Irreal] Le transmito todo a mi BB"
-Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada."
+Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada."
 
 [MutCuidenAFer]
 FriendlyName="[Irreal] Cuiden a Fer!"
