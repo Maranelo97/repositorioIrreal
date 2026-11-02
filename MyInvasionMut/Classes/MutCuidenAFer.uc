@@ -45,6 +45,8 @@ function bool IsAllowedMutator(Mutator M)
         || M.Class == class'MyInvasionMut.MutChatDokaBots'
         || M.Class == class'MyInvasionMut.MutInvasionUltimates'
         || M.Class == class'XGame.MutQuadJump'
+        // Solo cambia lo que se dibuja en el radar (y muestra a Fer en magenta)
+        || M.Class == class'MyInvasionMut.MutRadarMejorado'
         // Mutador que Invasion agrega automaticamente como componente interno.
         || M.Class == class'SkaarjPack.InvasionMutator';
 }
@@ -439,5 +441,5 @@ defaultproperties
 {
     GroupName="CuidenAFer"
     FriendlyName="[Irreal] Cuiden a Fer!"
-    Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos mas BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasion: Armas ultimas y Salto cuadruple (QuadJump). Bloquea partidas con otros mutadores."
+    Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos mas BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasion: Armas ultimas, [Irreal] Sigan viendo y Salto cuadruple (QuadJump). Bloquea partidas con otros mutadores."
 }
