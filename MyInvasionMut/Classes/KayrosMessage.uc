@@ -11,9 +11,10 @@ static function string GetString(
 {
     if (Switch == 1)
     {
-        return "TENES MUCHO KAYROS";
+        // Chr(201) = E con tilde (los .uc se guardan en UTF-8 y el compilador lee Latin-1)
+        return "TEN" $ Chr(201) $ "S MUCHO KAYROS";
     }
-    return "TENES POCO KAYROS";
+    return "TEN" $ Chr(201) $ "S POCO KAYROS";
 }
 
 static function RenderComplexMessage(
