@@ -10,6 +10,10 @@ var int LastWaveNum;
 var bool bWasWaveActive;
 var bool bChampionAnnounced;
 
+// Opcion de "Configurar mutadores": silencia los mensajes de voz normales de los bots
+var config bool bSilenceBotVoice;
+var localized string SilenceBotVoiceText, SilenceBotVoiceDesc;
+
 function PostBeginPlay()
 {
     local ChatDokaRules GR;
@@ -35,6 +39,9 @@ function PostBeginPlay()
             Level.Game.GameRulesModifiers.AddGameRules(GR);
         }
     }
+
+    if (bSilenceBotVoice && Level.Game != None && Level.Game.BroadcastHandler != None)
+        Level.Game.BroadcastHandler.RegisterBroadcastHandler(Spawn(class'ChatDokaBroadcastHandler'));
 
     LastChatTime = -30.0;
     NextRandomChatTime = Level.TimeSeconds + 30.0;
@@ -277,8 +284,24 @@ function Timer()
     }
 }
 
+static function FillPlayInfo(PlayInfo PlayInfo)
+{
+    Super.FillPlayInfo(PlayInfo);
+    PlayInfo.AddSetting(default.RulesGroup, "bSilenceBotVoice", default.SilenceBotVoiceText, 0, 1, "Check");
+}
+
+static event string GetDescriptionText(string PropName)
+{
+    if (PropName == "bSilenceBotVoice")
+        return default.SilenceBotVoiceDesc;
+    return Super.GetDescriptionText(PropName);
+}
+
 defaultproperties
 {
+    bSilenceBotVoice=True
+    SilenceBotVoiceText="Silenciar los mensajes de voz de los bots"
+    SilenceBotVoiceDesc="Saca los mensajes de voz normales de los bots (por ejemplo I've got your back), asi en el chat solo quedan las frases de Chat-doka. Los bots siguen obedeciendo ordenes, pero no responden en voz alta."
     Phrases(0)="CUANTO VALE LOS ELAO DE 100?, VALEN 100!!!"
     Phrases(1)="NO TE PODES EMBARAZAR DE UN TACHERO!"
     Phrases(2)="NO PODES EMBARAZAR A UNA JUDIA!"
@@ -342,5 +365,5 @@ defaultproperties
     LastWaveNum=-1
     GroupName="ChatDokaBots"
     FriendlyName="[Irreal] Chat-doka Bots"
-    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
+    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots (se puede cambiar en Configurar mutadores)."
 }
