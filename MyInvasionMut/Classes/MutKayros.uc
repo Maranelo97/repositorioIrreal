@@ -182,8 +182,13 @@ function Tick(float DeltaTime)
                     }
                     else if (PendingWeaponFactor < 1.00)
                     {
-                        AmmoDelta = Max(1, int(float(GainedAmmo) * (1.00 - PendingWeaponFactor) + 0.5));
-                        W.ConsumeAmmo(0, AmmoDelta);
+                        // Sin minimo de 1 y nunca toda la municion recogida: con armas de una
+                        // sola carga (Redeemer) la reduccion es 0 y el jugador conserva el arma.
+                        AmmoDelta = Min(int(float(GainedAmmo) * (1.00 - PendingWeaponFactor) + 0.5), GainedAmmo - 1);
+                        if (AmmoDelta > 0)
+                        {
+                            W.ConsumeAmmo(0, AmmoDelta);
+                        }
                     }
                 }
             }
@@ -342,6 +347,6 @@ defaultproperties
 {
     CurrentWaveNum=-1
     GroupName="KayrosMut"
-    FriendlyName="Poco o mucho Kayros?"
+    FriendlyName="[Irreal] Poco o mucho Kayros?"
     Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups)."
 }

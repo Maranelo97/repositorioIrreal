@@ -37,7 +37,7 @@ static function RenderComplexMessage(Canvas C, out float XL, out float YL, optio
 
 defaultproperties
 {
-    CustomFerFont=Font'UT2003Fonts.FontEurostile37'
+    CustomFerFont=Font'UT2003Fonts.FontEurostile29'
     bComplexString=True
     bIsUnique=True
     bFadeMessage=True

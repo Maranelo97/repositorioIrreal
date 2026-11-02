@@ -183,8 +183,16 @@ function Timer()
     if (InvGame == None)
         return;
 
+    // Entre oleadas no hay contagio: al terminar la oleada se cura a todos, para que la
+    // infeccion no siga sacando vida durante el descanso (que puede ser largo con Control de plagas FV).
+    if (!InvGame.bWaveInProgress)
+    {
+        CureAllInfected();
+        return;
+    }
+
     // Limpia cualquier infeccion de la ronda anterior antes de permitir contagios en la nueva.
-    if (InvGame.bWaveInProgress && InvGame.WaveNum != CurrentWaveNum)
+    if (InvGame.WaveNum != CurrentWaveNum)
     {
         CureAllInfected();
         CurrentWaveNum = InvGame.WaveNum;
@@ -203,6 +211,6 @@ defaultproperties
     CureTime=10.0
     CureCheckInterval=0.25
     GroupName="LeTransmitoTodoAMiBB"
-    FriendlyName="Le transmito todo a mi BB"
-    Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace dano pero infecta (-1 HP por segundo). La infeccion se contagia por cercania y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada."
+    FriendlyName="[Irreal] Le transmito todo a mi BB"
+    Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace dano pero infecta (-1 HP por segundo). La infeccion se contagia por cercania y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada."
 }

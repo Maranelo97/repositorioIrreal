@@ -1,5 +1,7 @@
 class CthulhuBossMessage extends LocalMessage;
 
+// Switch: 0 = aparece, 1 = entra en furia, 2 = fue abatido (RelatedPRI_1 = companero revivido, si hubo)
+
 var Font CustomBossFont;
 var Sound IntroRoarSound;
 
@@ -11,6 +13,10 @@ static function ClientReceive(PlayerController P, optional int Switch, optional 
 
     Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     if (P == None)
+        return;
+
+    // La muerte del jefe no tiene rugido ni sacudida
+    if (Switch == 2)
         return;
 
     SoundActor = P.ViewTarget;
@@ -44,35 +50,65 @@ static function ClientReceive(PlayerController P, optional int Switch, optional 
 
 static function string GetString(optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
 {
+    if (Switch == 2)
+        return "EL REY CTHULHU FUE ABATIDO!";
     if (Switch == 1)
         return "EL REY CTHULHU HA ENTRADO EN FURIA";
     return "EL REY CTHULHU HA APARECIDO";
 }
 
+// Dibuja una linea centrada con sombra y devuelve su ancho
+static function float DrawCenteredLine(Canvas C, string Text, float CenterY, byte R, byte G, byte B, byte Alpha, out float LineHeight)
+{
+    local float W, DrawX, DrawY;
+
+    C.StrLen(Text, W, LineHeight);
+    DrawX = (C.ClipX - W) * 0.5;
+    DrawY = CenterY - (LineHeight * 0.5);
+    C.SetDrawColor(0, 0, 0, Alpha);
+    C.SetPos(DrawX + 2.0, DrawY + 2.0);
+    C.DrawText(Text, false);
+    C.SetDrawColor(R, G, B, Alpha);
+    C.SetPos(DrawX, DrawY);
+    C.DrawText(Text, false);
+    return W;
+}
+
 static function RenderComplexMessage(Canvas C, out float XL, out float YL, optional string MessageString, optional int Switch, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject)
 {
     local byte CurrentAlpha;
-    local float DrawX, DrawY;
+    local float CenterY, LineH, W;
 
-    if (MessageString == "")
-        MessageString = static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     CurrentAlpha = C.DrawColor.A;
     if (default.CustomBossFont != None)
         C.Font = default.CustomBossFont;
-    C.StrLen(MessageString, XL, YL);
-    DrawX = (C.ClipX - XL) * 0.5;
-    DrawY = (C.ClipY * default.PosY) - (YL * 0.5);
-    C.SetDrawColor(0, 0, 0, CurrentAlpha);
-    C.SetPos(DrawX + 2.0, DrawY + 2.0);
-    C.DrawText(MessageString, false);
-    C.SetDrawColor(255, 0, 0, CurrentAlpha);
-    C.SetPos(DrawX, DrawY);
-    C.DrawText(MessageString, false);
+    CenterY = C.ClipY * default.PosY;
+
+    if (Switch == 2)
+    {
+        // Muerte del jefe: titulo en rojo y las recompensas debajo, una por linea
+        XL = DrawCenteredLine(C, static.GetString(Switch), CenterY, 255, 0, 0, CurrentAlpha, LineH);
+        YL = LineH;
+        W = DrawCenteredLine(C, "Suelta Double Damage y +25 de escudo para el equipo!", CenterY + YL, 255, 255, 255, CurrentAlpha, LineH);
+        XL = FMax(XL, W);
+        YL += LineH;
+        if (RelatedPRI_1 != None)
+        {
+            W = DrawCenteredLine(C, RelatedPRI_1.PlayerName $ " ha vuelto a la batalla!", CenterY + YL, 255, 255, 255, CurrentAlpha, LineH);
+            XL = FMax(XL, W);
+            YL += LineH;
+        }
+        return;
+    }
+
+    if (MessageString == "")
+        MessageString = static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+    XL = DrawCenteredLine(C, MessageString, CenterY, 255, 0, 0, CurrentAlpha, YL);
 }
 
 defaultproperties
 {
-    CustomBossFont=Font'UT2003Fonts.FontEurostile37'
+    CustomBossFont=Font'UT2003Fonts.FontEurostile29'
     IntroRoarSound=Sound'SkaarjPack_rc.WarLord.laugh1WL'
     bComplexString=True
     bIsUnique=True

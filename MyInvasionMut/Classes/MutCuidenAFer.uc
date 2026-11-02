@@ -438,6 +438,6 @@ function ModifyPlayer(Pawn Other)
 defaultproperties
 {
     GroupName="CuidenAFer"
-    FriendlyName="Cuiden a Fer!"
-    Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con Necesitamos mas BOTS, Chat-doka BOTS, Invasion: Armas ultimas y Salto cuadruple. Bloquea partidas con otros mutadores."
+    FriendlyName="[Irreal] Cuiden a Fer!"
+    Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos mas BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasion: Armas ultimas y Salto cuadruple (QuadJump). Bloquea partidas con otros mutadores."
 }

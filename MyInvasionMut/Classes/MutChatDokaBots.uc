@@ -1,6 +1,6 @@
 class MutChatDokaBots extends Mutator;
 
-var string Phrases[45];
+var string Phrases[47];
 var string CthulhuPhrases[6];
 var string UltimateKillPhrases[6];
 var int LastPhraseIndex;
@@ -18,7 +18,9 @@ function PostBeginPlay()
 
     // Asegura caracteres especiales sin problemas de codificacion
     Phrases[6] = Chr(191) $ "COMO COJO CARAJO!?";
-    Phrases[36] = "QUIEN ES TUI DUE" $ Chr(209) $ "O CARAJO! TE GUSTA COMO TE GARCHO!?!";
+    Phrases[36] = "QUIEN ES TU DUE" $ Chr(209) $ "O CARAJO! TE GUSTA COMO TE GARCHO!?!";
+    Phrases[46] = "EL 8 DE OCTUBRE MARCIEL CUMPLE A" $ Chr(209) $ "OS!";
+    CthulhuPhrases[1] = "MIREN EL TAMA" $ Chr(209) $ "O DE ESE CTHULHU, COMO JUEGAN CON MI GUITA!";
 
     GR = Spawn(class'ChatDokaRules');
     if (Level.Game != None && GR != None)
@@ -54,7 +56,7 @@ function string GetRandomPhrase()
 
 function string GetHumanDeathMockPhrase(string VictimName)
 {
-    switch (Rand(6))
+    switch (Rand(8))
     {
         case 0:
             return Chr(161) $ VictimName $ ", HASTA LOS HUEVOS!";
@@ -66,6 +68,10 @@ function string GetHumanDeathMockPhrase(string VictimName)
             return Chr(161) $ VictimName $ " MURIO! NECESITAMOS MAS BOTS PARA CARREARLO!";
         case 4:
             return Chr(161) $ "MIRA COMO JUEGAN CON LA VIDA DE " $ VictimName $ "!";
+        case 5:
+            return Chr(161) $ VictimName $ " TENIA INFORMACION QUE PUEDE LLEVAR AL ARRESTO DE CRISTINA KIRCHNER!";
+        case 6:
+            return Chr(161) $ "A " $ VictimName $ " LE METIERON EL TIRO DE MAXIMO A NESTOR!";
         default:
             return Chr(161) $ "CHAU " $ VictimName $ ", APROBASTE EL CASTING PARA EL CAJON!";
     }
@@ -302,22 +308,24 @@ defaultproperties
     Phrases(26)="QUE SE SIENTE VIVIR UNA MENTIRA!?"
     Phrases(27)="COMPRA LA ULTI EN HERNAN DEPORTES!"
     Phrases(28)="CHACO, VO Y TU PERRO DE MIERDA!"
-    Phrases(29)="HAY ARTICULOS DEPORTIVO, TODO OK!"
+    Phrases(29)="HAY ARTICULOS DEPORTIVOS, TODO OK!"
     Phrases(30)="ANGELES ARIANA, HUUUUU QUE VIEJA PUTA!"
     Phrases(31)="DALE, DAME LA PAPAFRITA Y PAGAME EL VIATICO!"
     Phrases(32)="PAGUENLE AL PANA RAMON CLEMENTE!!!"
-    Phrases(33)="VACIAME BIEN LOS HUEVOS NESTOR!"
+    Phrases(33)="COMEME BIEN LOS HUEVOS NESTOR!"
     Phrases(34)="TE GUSTA LA VIOLENCIA!?!?"
     Phrases(35)="NOOOO AMIGO, MURIO UNA BANDA DE GENTE!!"
-    Phrases(36)="QUIEN ES TUI DUENO CARAJO! TE GUSTA COMO TE GARCHO!?!"
+    Phrases(36)="QUIEN ES TU DUENO CARAJO! TE GUSTA COMO TE GARCHO!?!"
     Phrases(37)="GALLETITAS VANINA, ESTAN BUENISIMAS!!"
     Phrases(38)="GENIALESSSSS!!"
     Phrases(39)="GENUISSSSSS!"
-    Phrases(40)="CALDOS KNORK, LO MEJOR PARA EL INVIERNO!"
-    Phrases(41)="LABORATOPRIOS BAGO, CONCIENCIA EL SERVICIO DE LA SALUD!"
+    Phrases(40)="CALDOS KNORR, LO MEJOR PARA EL INVIERNO!"
+    Phrases(41)="LABORATORIOS BAGO, CONCIENCIA AL SERVICIO DE LA SALUD!"
     Phrases(42)="YO SOY EL LUIS AMSTRONG DE LA CHOTA!"
-    Phrases(43)="AHHAHAHAHAHAHAH, EL CTHULU GARCADO EN FUGACETA!"
+    Phrases(43)="AHHAHAHAHAHAHAH, EL CTHULHU GARCADO EN FUGACETA!"
     Phrases(44)="BUENO, VAMOS AL TELO!"
+    Phrases(45)="MIREN CHICOS, MARCIEL DESNUDO!"
+    Phrases(46)="EL 8 DE OCTUBRE MARCIEL CUMPLE ANOS!"
     CthulhuPhrases(0)="CORRAN QUE APARECIO EL REY CTHULHU, HASTA LOS HUEVOS!"
     CthulhuPhrases(1)="MIREN EL TAMANO DE ESE CTHULHU, COMO JUEGAN CON MI GUITA!"
     CthulhuPhrases(2)="EL REY CTHULHU?! A MI POR 10MIL NO ME VAN A LLEVAR!"
@@ -333,6 +341,6 @@ defaultproperties
     LastPhraseIndex=-1
     LastWaveNum=-1
     GroupName="ChatDokaBots"
-    FriendlyName="Chat-doka Bots"
+    FriendlyName="[Irreal] Chat-doka Bots"
     Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
 }

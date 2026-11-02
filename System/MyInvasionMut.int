@@ -1,51 +1,51 @@
 [Public]
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutCuidenAFer,Description="Cuiden a Fer!||Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con Necesitamos mas BOTS, Chat-doka BOTS, Invasion: Armas ultimas y Salto cuadruple. Bloquea partidas con otros mutadores.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionPause,Description="Control de plagas FV||Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInstantRespawn,Description="Es todo muy irreal||Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutMarianoskyRage,Description="Marianosky's rage||25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamano, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos dano, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y mas cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un companero caido.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="Necesitamos mas BOTS||Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (maximo 24 bots).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="Invasion: Armas ultimas||Un unico punto de arma alterna al azar entre Redeemer, Target Painter, Ion Painter y Lightning Gun en cada ronda, con respawn instantaneo. Los demas puntos de esas armas quedan vacios.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="Six Seven||En batallas por equipos (excepto Invasion), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automatico de equipos.")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace dano pero infecta (-1 HP por segundo). La infeccion se contagia por cercania y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutCuidenAFer,Description="[Irreal] Cuiden a Fer!||Cada oleada de Invasión un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, munición o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos más BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasión: Armas últimas y Salto cuádruple (QuadJump). Bloquea partidas con otros mutadores.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionPause,Description="[Irreal] Control de plagas FV||Pausa el inicio de la siguiente oleada en Invasión y otorga +50% de velocidad durante la pausa para recolectar ítems. El host o un admin inicia la oleada con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInstantRespawn,Description="[Irreal] Es todo muy irreal||Elimina el cooldown de los ítems del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a ítems que los jugadores dejaron caer.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutMarianoskyRage,Description="[Irreal] Marianosky's rage||25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamaño, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos daño, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y más cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un compañero caído.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="[Irreal] Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="[Irreal] Necesitamos más BOTS||Ajusta dinámicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (máximo 24 bots).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="[Irreal] Invasión: Armas últimas||Un único punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantáneo. Los demás puntos de esas armas quedan vacíos.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="[Irreal] Six Seven||En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="[Irreal] ¿Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="[Irreal] Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada.")
 
 [MutInvasionPause]
-FriendlyName="Control de plagas FV"
-Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave)."
+FriendlyName="[Irreal] Control de plagas FV"
+Description="Pausa el inicio de la siguiente oleada en Invasión y otorga +50% de velocidad durante la pausa para recolectar ítems. El host o un admin inicia la oleada con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave)."
 
 [MutInstantRespawn]
-FriendlyName="Es todo muy irreal"
-Description="Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer."
+FriendlyName="[Irreal] Es todo muy irreal"
+Description="Elimina el cooldown de los ítems del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a ítems que los jugadores dejaron caer."
 
 [MutMarianoskyRage]
-FriendlyName="Marianosky's rage"
-Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamano, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos dano, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y mas cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un companero caido."
+FriendlyName="[Irreal] Marianosky's rage"
+Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamaño, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos daño, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y más cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un compañero caído."
 
 [MutChatDokaBots]
-FriendlyName="Chat-doka Bots"
-Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
+FriendlyName="[Irreal] Chat-doka Bots"
+Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
 
 [MutNeedMoreBots]
-FriendlyName="Necesitamos mas BOTS"
-Description="Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (maximo 24 bots)."
+FriendlyName="[Irreal] Necesitamos más BOTS"
+Description="Ajusta dinámicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (máximo 24 bots)."
 
 [MutSixSeven]
-FriendlyName="Six Seven"
-Description="En batallas por equipos (excepto Invasion), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automatico de equipos."
+FriendlyName="[Irreal] Six Seven"
+Description="En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos."
 
 [MutInvasionUltimates]
-FriendlyName="Invasion: Armas ultimas"
-Description="Un unico punto de arma alterna al azar entre Redeemer, Target Painter, Ion Painter y Lightning Gun en cada ronda, con respawn instantaneo. Los demas puntos de esas armas quedan vacios."
+FriendlyName="[Irreal] Invasión: Armas últimas"
+Description="Un único punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantáneo. Los demás puntos de esas armas quedan vacíos."
 
 [MutKayros]
-FriendlyName="Poco o mucho Kayros?"
+FriendlyName="[Irreal] ¿Poco o mucho Kayros?"
 Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups)."
 
 [MutLeTransmitoTodoAMiBB]
-FriendlyName="Le transmito todo a mi BB"
-Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace dano pero infecta (-1 HP por segundo). La infeccion se contagia por cercania y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada."
+FriendlyName="[Irreal] Le transmito todo a mi BB"
+Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada."
 
 [MutCuidenAFer]
-FriendlyName="Cuiden a Fer!"
-Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con Necesitamos mas BOTS, Chat-doka BOTS, Invasion: Armas ultimas y Salto cuadruple. Bloquea partidas con otros mutadores."
+FriendlyName="[Irreal] Cuiden a Fer!"
+Description="Cada oleada de Invasión un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, munición o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos más BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasión: Armas últimas y Salto cuádruple (QuadJump). Bloquea partidas con otros mutadores."

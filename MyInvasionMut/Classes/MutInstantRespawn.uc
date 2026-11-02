@@ -46,6 +46,6 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 defaultproperties
 {
     GroupName="InstantRespawn"
-    FriendlyName="Es todo muy irreal"
+    FriendlyName="[Irreal] Es todo muy irreal"
     Description="Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer."
 }

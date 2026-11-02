@@ -225,6 +225,6 @@ defaultproperties
 {
     BotsPerPlayer=3
     GroupName="BotCountMut"
-    FriendlyName="Necesitamos mas BOTS"
+    FriendlyName="[Irreal] Necesitamos mas BOTS"
     Description="Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (maximo 24 bots)."
 }
