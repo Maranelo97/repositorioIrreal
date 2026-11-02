@@ -58,7 +58,8 @@ Por eso:
 ## Otras cosas a tener en cuenta
 
 - **Oleadas:** `Invasion.WaveNum` empieza en 0; en pantalla se muestra `WaveNum + 1`. La oleada 9 es `WaveNum == 8`.
-- **Nombres en el menú:** la lista de mutadores se ordena alfabéticamente sin distinguir mayúsculas. Con el prefijo `[Irreal]` los nuestros quedan juntos al principio. El juego guarda la selección por nombre de clase, así que cambiar el nombre visible no rompe configuraciones guardadas. Los nombres tienen que ser únicos.
+- **Nombres en el menú:** la lista de mutadores se ordena alfabéticamente sin distinguir mayúsculas, comparando letra por letra (los símbolos como `[`, `]` y `_` quedan antes que las letras). Con el prefijo `[Irreal]` los nuestros quedan juntos al principio, y `[Irreal_Test]` queda justo después de ellos (con un espacio, `[Irreal Test]`, quedaría antes).
+- **Descripciones en el menú:** el carácter `|` es un salto de línea en el cuadro de descripción. No usarlo para separar opciones; usar comas o `/`. El juego guarda la selección por nombre de clase, así que cambiar el nombre visible no rompe configuraciones guardadas. Los nombres tienen que ser únicos.
 - **Recursos:** el paquete se compila solo con código. Usa recursos del juego en lugar de recursos propios: la skin original del WarLord (con brillo violeta/rojo), el sonido `SkaarjPack_rc.WarLord.laugh1WL` y la fuente `UT2003Fonts.FontEurostile29` para los mensajes grandes.
 - **Tecla para la siguiente oleada (Control de plagas FV):** el comando es `mutate nextwave`. No conviene asignarlo a la `Q`, que por defecto es el translocator. Por ejemplo: `set input H mutate nextwave` en la consola (queda guardado).
 - **Instalar una versión nueva:** todos (host y clientes) tienen que tener los mismos `MyInvasionMut.u`, `.ucl`, `.int` y `.est` en la carpeta `System`, con el juego cerrado. Si no, aparece el error de versión del paquete no coincidente.
