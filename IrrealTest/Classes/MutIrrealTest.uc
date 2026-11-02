@@ -3,6 +3,31 @@
 // funciones de los mutadores de MyInvasionMut, para probarlos sin esperar.
 class MutIrrealTest extends Mutator;
 
+var bool bInteractionAdded;
+
+function PostBeginPlay()
+{
+    Super.PostBeginPlay();
+    SetTimer(1.0, true);
+}
+
+// Cuando el jugador local (el host) ya esta listo, le agrega el comando "irreal"
+function Timer()
+{
+    local PlayerController PC;
+
+    if (bInteractionAdded)
+        return;
+
+    PC = Level.GetLocalPlayerController();
+    if (PC != None && PC.Player != None && PC.Player.InteractionMaster != None)
+    {
+        PC.Player.InteractionMaster.AddInteraction("IrrealTest.IrrealTestInteraction", PC.Player);
+        bInteractionAdded = true;
+        SetTimer(0.0, false);
+    }
+}
+
 function bool IsHostOrAdmin(PlayerController PC)
 {
     if (PC == None)
@@ -63,12 +88,12 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
 
 function ShowHelp(PlayerController Sender)
 {
-    Sender.ClientMessage("Comandos de prueba:");
-    Sender.ClientMessage("  mutate test kill - mata a todos los monstruos y termina la oleada");
-    Sender.ClientMessage("  mutate test cthulhu - hace aparecer al Rey Cthulhu");
-    Sender.ClientMessage("  mutate test krall - hace aparecer al Elite Krall infectado");
-    Sender.ClientMessage("  mutate test kayros poco/mucho - te da Poco o Mucho Kayros");
-    Sender.ClientMessage("  mutate test arma redeemer/painter/ion/lightning - cambia el arma ultima");
+    Sender.ClientMessage("Comandos de prueba (irreal ... o mutate test ...):");
+    Sender.ClientMessage("  irreal kill - mata a todos los monstruos y termina la oleada");
+    Sender.ClientMessage("  irreal cthulhu - hace aparecer al Rey Cthulhu");
+    Sender.ClientMessage("  irreal krall - hace aparecer al Elite Krall infectado");
+    Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
+    Sender.ClientMessage("  irreal arma redeemer/painter/ion/lightning - cambia el arma ultima");
 }
 
 function Invasion GetWaveInProgress(PlayerController Sender)
@@ -210,7 +235,7 @@ function GiveKayros(string Arg, PlayerController Sender)
         NewState = 2;
     else
     {
-        Sender.ClientMessage("Uso: mutate test kayros poco/mucho");
+        Sender.ClientMessage("Uso: irreal kayros poco/mucho");
         return;
     }
 
@@ -252,7 +277,7 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         WeaponIndex = 3;
     else
     {
-        Sender.ClientMessage("Uso: mutate test arma redeemer/painter/ion/lightning");
+        Sender.ClientMessage("Uso: irreal arma redeemer/painter/ion/lightning");
         return;
     }
 
@@ -277,5 +302,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: mutate test kill, cthulhu, krall, kayros poco/mucho y arma redeemer/painter/ion/lightning. Escribir mutate test para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, cthulhu, krall, kayros poco/mucho y arma redeemer/painter/ion/lightning (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }
