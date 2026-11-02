@@ -133,7 +133,7 @@ function Timer()
                 bWaitingForAdmin = true;
                 InvGame.WaveCountDown = 9999; // Congela el temporizador de la siguiente ronda
                 ApplyPauseSpeedBoost(true);
-                NotifyHostOrAdmin("Oleada limpiada! Velocidad +50% activada. Presiona 'Q' para iniciar la siguiente ronda.");
+                NotifyHostOrAdmin("Oleada limpiada! Velocidad +50%. Q: siguiente oleada");
             }
         }
 
