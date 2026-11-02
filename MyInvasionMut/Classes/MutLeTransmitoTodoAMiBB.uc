@@ -203,6 +203,6 @@ defaultproperties
     CureTime=10.0
     CureCheckInterval=0.25
     GroupName="LeTransmitoTodoAMiBB"
-    FriendlyName="Le transmito todo a mi BB"
+    FriendlyName="[Irreal] Le transmito todo a mi BB"
     Description="Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace dano pero infecta (-1 HP por segundo). La infeccion se contagia por cercania y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al empezar cada oleada."
 }

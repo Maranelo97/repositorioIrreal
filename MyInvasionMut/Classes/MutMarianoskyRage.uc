@@ -531,6 +531,6 @@ defaultproperties
     ChampionChance=0.25
     CurrentWaveNum=-1
     GroupName="MarianoskyRage"
-    FriendlyName="Marianosky's rage"
+    FriendlyName="[Irreal] Marianosky's rage"
     Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamano, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos dano, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y mas cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un companero caido."
 }

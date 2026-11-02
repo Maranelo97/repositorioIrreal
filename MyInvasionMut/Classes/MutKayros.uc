@@ -342,6 +342,6 @@ defaultproperties
 {
     CurrentWaveNum=-1
     GroupName="KayrosMut"
-    FriendlyName="Poco o mucho Kayros?"
+    FriendlyName="[Irreal] Poco o mucho Kayros?"
     Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups)."
 }

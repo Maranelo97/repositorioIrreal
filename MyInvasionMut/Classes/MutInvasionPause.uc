@@ -152,6 +152,6 @@ function Timer()
 defaultproperties
 {
     GroupName="InvasionPause"
-    FriendlyName="Control de plagas FV"
+    FriendlyName="[Irreal] Control de plagas FV"
     Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave)."
 }
