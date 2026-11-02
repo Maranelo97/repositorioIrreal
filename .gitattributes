@@ -1,0 +1,9 @@
+* text=auto
+*.uc text eol=crlf
+*.int text
+*.est text
+*.ucl text
+*.u binary
+*.utx binary
+*.uax binary
+*.zip binary

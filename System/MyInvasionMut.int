@@ -1,0 +1,51 @@
+[Public]
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutCuidenAFer,Description="Cuiden a Fer!||Solo compatible con Necesitamos mas BOTS, Chat-doka BOTS, Invasion: Armas ultimas y Salto cuadruple. Bloquea partidas con otros mutadores.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionPause,Description="Control de plagas FV||Pausa el inicio de la siguiente ola en Invasion hasta presionar la tecla Q y otorga +50% de velocidad durante la pausa para recolectar items.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInstantRespawn,Description="Es todo muy irreal||Elimina el cooldown de los items del piso (balas, salud, escudos) para que se regeneren al instante.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutMarianoskyRage,Description="Marianosky's rage||40% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord +30% tamano, piel Negro/Violeta oscuro que pasa a Rojo incandescente al 35% HP, llamas en alas y pies, corona giratoria, resistencia pasiva a dano, 500 de armadura y 2500 HP base + 500 HP por humano + 250 HP por bot aliado).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="Necesitamos mas BOTS||Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="Invasion: Armas ultimas||Un solo punto aleatorio alterna Redeemer y Target Painter por ronda. Respawn de 2 minutos; excluye la Entrelazadora.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="Six Seven||En batallas por equipos, ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="Le transmito todo a mi BB||Despues de la ronda 8 puede aparecer un Elite Krall cuyo rayo infecta; la infeccion se propaga por proximidad y puede curarse con la Entrelazadora.")
+
+[MutInvasionPause]
+FriendlyName="Control de plagas FV"
+Description="Pausa el inicio de la siguiente ola en Invasion hasta presionar la tecla Q y otorga +50% de velocidad durante la pausa para recolectar items."
+
+[MutInstantRespawn]
+FriendlyName="Es todo muy irreal"
+Description="Elimina el cooldown de los items del piso (balas, salud, escudos) para que se regeneren al instante."
+
+[MutMarianoskyRage]
+FriendlyName="Marianosky's rage"
+Description="40% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord +30% tamano, piel Negro/Violeta oscuro que pasa a Rojo incandescente al 35% HP, llamas en alas y pies, corona giratoria, resistencia pasiva a dano, 500 de armadura y 2500 HP base + 500 HP por humano + 250 HP por bot aliado)."
+
+[MutChatDokaBots]
+FriendlyName="Chat-doka Bots"
+Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
+
+[MutNeedMoreBots]
+FriendlyName="Necesitamos mas BOTS"
+Description="Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida."
+
+[MutSixSeven]
+FriendlyName="Six Seven"
+Description="En batallas por equipos, ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo."
+
+[MutInvasionUltimates]
+FriendlyName="Invasion: Armas ultimas"
+Description="Un solo punto aleatorio alterna Redeemer y Target Painter por ronda. Respawn de 2 minutos; excluye la Entrelazadora."
+
+[MutKayros]
+FriendlyName="Poco o mucho Kayros?"
+Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups)."
+
+[MutLeTransmitoTodoAMiBB]
+FriendlyName="Le transmito todo a mi BB"
+Description="Despues de la ronda 8 puede aparecer un Elite Krall cuyo rayo infecta; la infeccion se propaga por proximidad y puede curarse con la Entrelazadora."
+
+[MutCuidenAFer]
+FriendlyName="Cuiden a Fer!"
+Description="Solo compatible con Necesitamos mas BOTS, Chat-doka BOTS, Invasion: Armas ultimas y Salto cuadruple. Bloquea partidas con otros mutadores."
