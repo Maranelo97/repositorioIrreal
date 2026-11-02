@@ -45,6 +45,23 @@ function NotifyHostOrAdmin(string Msg)
     }
 }
 
+// Cada host o admin ve la tecla que tiene asignada a 'mutate nextwave' (ver InvasionPauseMessage).
+// Switch 0 muestra la linea fija y Switch 1 la saca.
+function SendNextWaveHint(int Switch)
+{
+    local Controller C;
+    local PlayerController PC;
+
+    for (C = Level.ControllerList; C != None; C = C.NextController)
+    {
+        PC = PlayerController(C);
+        if (IsHostOrAdmin(PC))
+        {
+            PC.ReceiveLocalizedMessage(class'InvasionPauseMessage', Switch);
+        }
+    }
+}
+
 function ApplyPauseSpeedBoost(bool bEnableBoost)
 {
     local Controller C;
@@ -91,6 +108,7 @@ function Mutate(string MutateString, PlayerController Sender)
                 bWaitingForAdmin = false;
                 bWaveWasActive = false;
                 ApplyPauseSpeedBoost(false);
+                SendNextWaveHint(1);
                 InvGame.WaveCountDown = 6; // Inicia cuenta regresiva de 5 segundos
                 NotifyHostOrAdmin("Siguiente oleada iniciada! Velocidad normal restaurada.");
             }
@@ -112,6 +130,11 @@ function Timer()
         if (InvGame.bWaveInProgress)
         {
             bWaveWasActive = true;
+            // Por si la oleada empezo sin 'mutate nextwave': sacar la linea fija
+            if (bWaitingForAdmin)
+            {
+                SendNextWaveHint(1);
+            }
             bWaitingForAdmin = false;
             if (bHappyHourSpeedActive)
             {
@@ -133,7 +156,8 @@ function Timer()
                 bWaitingForAdmin = true;
                 InvGame.WaveCountDown = 9999; // Congela el temporizador de la siguiente ronda
                 ApplyPauseSpeedBoost(true);
-                NotifyHostOrAdmin("Oleada limpiada! Velocidad +50%. Q: siguiente oleada");
+                NotifyHostOrAdmin("Oleada limpiada! Velocidad +50%");
+                SendNextWaveHint(0);
             }
         }
 
