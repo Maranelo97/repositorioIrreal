@@ -96,6 +96,16 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal ulti 1-4 - cambia el arma ultima: 1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun");
 }
 
+// Invasion suma 1 a WaveNum al terminar cada oleada, asi que entre oleadas
+// WaveNum ya es el numero de la oleada que viene.
+function bool IsBetweenWaves()
+{
+    local Invasion InvGame;
+
+    InvGame = Invasion(Level.Game);
+    return InvGame != None && !InvGame.bWaveInProgress;
+}
+
 function Invasion GetWaveInProgress(PlayerController Sender)
 {
     local Invasion InvGame;
@@ -251,6 +261,9 @@ function GiveKayros(string Arg, PlayerController Sender)
     KayrosMut.ChosenPlayer = Sender;
     KayrosMut.PreviousChosenPlayer = Sender;
     KayrosMut.KayrosState = NewState;
+    // Entre oleadas, la oleada que viene ya cuenta como sorteada: asi no se pisa la eleccion
+    if (IsBetweenWaves())
+        KayrosMut.CurrentWaveNum = Invasion(Level.Game).WaveNum;
     Sender.ReceiveLocalizedMessage(class'KayrosMessage', NewState);
 
     foreach DynamicActors(class'MutChatDokaBots', ChatMut)
@@ -259,7 +272,10 @@ function GiveKayros(string Arg, PlayerController Sender)
         break;
     }
 
-    Sender.ClientMessage("Prueba: Kayros asignado hasta la proxima oleada.");
+    if (IsBetweenWaves())
+        Sender.ClientMessage("Prueba: Kayros asignado para la proxima oleada.");
+    else
+        Sender.ClientMessage("Prueba: Kayros asignado hasta la proxima oleada.");
 }
 
 function SetUltimateWeapon(string Arg, PlayerController Sender)
@@ -309,7 +325,13 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     }
 
     UltMut.SetUltimate(WeaponIndex);
-    Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " hasta la proxima oleada.");
+    // Entre oleadas, que el sorteo al empezar la oleada no reemplace el arma elegida
+    if (IsBetweenWaves())
+        UltMut.CurrentWaveNum = Invasion(Level.Game).WaveNum;
+    if (IsBetweenWaves())
+        Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " para la proxima oleada.");
+    else
+        Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " hasta la proxima oleada.");
 }
 
 defaultproperties
