@@ -20,7 +20,7 @@ Cada comando se puede escribir como `irreal ...` o como `mutate test ...` (por e
 | `irreal cthulhu` (o `irreal cutulu`) | Hace aparecer al Rey Cthulhu ahora |
 | `irreal infectado` | Hace aparecer al Elite Krall infectado ahora (el contagio solo funciona desde la oleada 9) |
 | `irreal kayros poco` / `mucho` | Te da Poco o Mucho Kayros hasta la próxima oleada |
-| `irreal ulti 1` / `2` / `3` / `4` | Cambia el arma del punto especial de Armas últimas y además te la da (o te la recarga): 1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun (también acepta `redeemer`, `painter`, `ion` y `lightning`). El arma que te da no pasa por Kayros; para probar Kayros, levantarla del punto especial |
+| `irreal ulti 1` / `2` / `3` | Cambia el arma del punto especial de Armas últimas y además te la da (o te la recarga): 1 Redeemer, 2 Ion Painter, 3 Lightning Gun (también acepta `redeemer`, `ion` y `lightning`). El arma que te da no pasa por Kayros; para probar Kayros, levantarla del punto especial |
 
 `irreal kayros` e `irreal ulti` se pueden usar durante una oleada (vale hasta que termina) o entre oleadas (vale para la oleada que viene; sin esto, el sorteo al empezar la oleada pisaría la elección).
 

@@ -93,7 +93,7 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
     Sender.ClientMessage("  irreal infectado - hace aparecer al Elite Krall infectado");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
-    Sender.ClientMessage("  irreal ulti 1-4 - cambia el arma ultima: 1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun");
+    Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
 }
 
 // Invasion suma 1 a WaveNum al terminar cada oleada, asi que entre oleadas
@@ -291,27 +291,21 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         WeaponName = "Redeemer";
         WeaponClassName = "XWeapons.Redeemer";
     }
-    else if (Arg == "2" || Arg == "painter")
+    else if (Arg == "2" || Arg == "ion")
     {
         WeaponIndex = 1;
-        WeaponName = "Target Painter";
-        WeaponClassName = "OnslaughtFull.ONSPainter";
-    }
-    else if (Arg == "3" || Arg == "ion")
-    {
-        WeaponIndex = 2;
         WeaponName = "Ion Painter";
         WeaponClassName = "XWeapons.Painter";
     }
-    else if (Arg == "4" || Arg == "lightning")
+    else if (Arg == "3" || Arg == "lightning")
     {
-        WeaponIndex = 3;
+        WeaponIndex = 2;
         WeaponName = "Lightning Gun";
         WeaponClassName = "XWeapons.SniperRifle";
     }
     else
     {
-        Sender.ClientMessage("Uso: irreal ulti 1-4 (1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun)");
+        Sender.ClientMessage("Uso: irreal ulti 1-3 (1 Redeemer, 2 Ion Painter, 3 Lightning Gun)");
         return;
     }
 
@@ -375,5 +369,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y ulti 1-4 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }

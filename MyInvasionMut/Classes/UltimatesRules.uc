@@ -28,7 +28,6 @@ function bool OverridePickupQuery(Pawn Other, Pickup item, out byte bAllowPickup
 function bool IsUltimatePickup(Pickup item)
 {
     return MutInvasionRedeemerPickup(item) != None
-        || MutInvasionTargetPainterPickup(item) != None
         || MutInvasionIonPainterPickup(item) != None
         || MutInvasionLightningGunPickup(item) != None;
 }
