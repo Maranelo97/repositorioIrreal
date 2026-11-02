@@ -42,8 +42,6 @@ simulated function ApplyBossVisual()
 
     if (bEnraged)
     {
-        BossOwner.Skins[0] = Texture'MyInvasionMut.Skins.CthulhuSkinRed';
-        BossOwner.Skins[1] = Texture'MyInvasionMut.Skins.CthulhuSkinRed';
         BossOwner.AmbientGlow = 230;
         BossMat = Material'XGameShaders.TransPlayerCellRed';
         BossOwner.LightType = LT_Pulse;
@@ -54,8 +52,6 @@ simulated function ApplyBossVisual()
     }
     else
     {
-        BossOwner.Skins[0] = Texture'MyInvasionMut.Skins.CthulhuSkinViolet';
-        BossOwner.Skins[1] = Texture'MyInvasionMut.Skins.CthulhuSkinViolet';
         BossOwner.AmbientGlow = 80;
         BossMonster = Monster(BossOwner);
         if (BossMonster != None)

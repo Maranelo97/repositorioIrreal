@@ -1,9 +1,5 @@
 class MutMarianoskyRage extends Mutator;
 
-#exec AUDIO IMPORT FILE="Sounds\rugidointro.wav" NAME="CthulhuIntroRoar" GROUP="Sounds"
-#exec TEXTURE IMPORT NAME="CthulhuSkinViolet" FILE="Textures\CthulhuSkinViolet.tga" GROUP="Skins" ALPHA=1 MASKED=1 DXT=5
-#exec TEXTURE IMPORT NAME="CthulhuSkinRed" FILE="Textures\CthulhuSkinRed.tga" GROUP="Skins" ALPHA=1 MASKED=1 DXT=5
-
 var float ChampionChance;
 var int CurrentWaveNum;
 var bool bWaveHasChampion;
@@ -36,8 +32,6 @@ function PostBeginPlay()
 
     if (Level != None)
     {
-        Level.AddPrecacheMaterial(Texture'MyInvasionMut.Skins.CthulhuSkinViolet');
-        Level.AddPrecacheMaterial(Texture'MyInvasionMut.Skins.CthulhuSkinRed');
         Level.AddPrecacheMaterial(Material'XGameShaders.PlayerShaders.WeaponUDamageShader');
         Level.AddPrecacheMaterial(Material'XGameShaders.TransPlayerCellRed');
         Level.AddPrecacheMaterial(Shader'XGameShaders.BRShaders.BombIconYS');
@@ -162,9 +156,7 @@ function ApplyUDamageVisual(Monster M)
         return;
     }
 
-    // Reemplazo completo de piel por Negro/Violeta oscuro en estado normal
-    M.Skins[0] = Texture'MyInvasionMut.Skins.CthulhuSkinViolet';
-    M.Skins[1] = Texture'MyInvasionMut.Skins.CthulhuSkinViolet';
+    // Brillo violeta sobre la piel original del WarLord en estado normal
     M.AmbientGlow = 80;
 
     UDamageMat = M.UDamageWeaponMaterial;
@@ -198,9 +190,7 @@ function ApplyEnrageVisual(Monster M)
         return;
     }
 
-    // Reemplazo completo de piel por Rojo incandescente al entrar en Furia (<= 35% HP)
-    M.Skins[0] = Texture'MyInvasionMut.Skins.CthulhuSkinRed';
-    M.Skins[1] = Texture'MyInvasionMut.Skins.CthulhuSkinRed';
+    // Brillo rojo incandescente sobre la piel original al entrar en Furia (<= 35% HP)
     M.AmbientGlow = 230;
 
     EnrageMat = Material'XGameShaders.TransPlayerCellRed';
@@ -335,7 +325,7 @@ function PromoteToChampion(Monster M)
         MC.ReactionTime = 0.5;
     }
 
-    // Piel Negro/Violeta oscuro + Overlay y accesorios visuales (llamas en alas/pies + corona giratoria)
+    // Brillo violeta + Overlay y accesorios visuales (llamas en alas/pies + corona giratoria)
     ApplyUDamageVisual(M);
     EnsureBossAttachments(M);
 

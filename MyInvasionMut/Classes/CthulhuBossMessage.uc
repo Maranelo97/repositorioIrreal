@@ -1,7 +1,5 @@
 class CthulhuBossMessage extends LocalMessage;
 
-#exec new TrueTypeFontFactory PACKAGE="MyInvasionMut" Name="CthulhuFont48" FontName="Unreal Tournament" Height=48 AntiAlias=1
-
 var Font CustomBossFont;
 var Sound IntroRoarSound;
 
@@ -74,8 +72,8 @@ static function RenderComplexMessage(Canvas C, out float XL, out float YL, optio
 
 defaultproperties
 {
-    CustomBossFont=Font'MyInvasionMut.CthulhuFont48'
-    IntroRoarSound=Sound'MyInvasionMut.Sounds.CthulhuIntroRoar'
+    CustomBossFont=Font'UT2003Fonts.FontEurostile37'
+    IntroRoarSound=Sound'SkaarjPack_rc.WarLord.laugh1WL'
     bComplexString=True
     bIsUnique=True
     bFadeMessage=True

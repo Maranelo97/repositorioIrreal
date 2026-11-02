@@ -68,7 +68,7 @@ static function RenderComplexMessage(
 
 defaultproperties
 {
-    CustomKayrosFont=Font'MyInvasionMut.CthulhuFont48'
+    CustomKayrosFont=Font'UT2003Fonts.FontEurostile37'
     bComplexString=True
     bIsUnique=True
     bFadeMessage=True
