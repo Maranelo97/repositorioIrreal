@@ -6,10 +6,24 @@ var bool bInitialized;
 
 function PostBeginPlay()
 {
+    local UltimatesRules GR;
+
     Super.PostBeginPlay();
     CurrentWaveNum = -1;
     if (Invasion(Level.Game) != None)
+    {
         SetTimer(1.0, false);
+
+        // Rechaza recoger el arma del punto especial cuando ya tenes la municion llena
+        GR = Spawn(class'UltimatesRules');
+        if (GR != None)
+        {
+            if (Level.Game.GameRulesModifiers == None)
+                Level.Game.GameRulesModifiers = GR;
+            else
+                Level.Game.GameRulesModifiers.AddGameRules(GR);
+        }
+    }
 }
 
 function bool IsSpecialWeapon(class<Weapon> WeaponClass)
