@@ -20,7 +20,7 @@ Cada comando se puede escribir como `irreal ...` o como `mutate test ...` (por e
 | `irreal cthulhu` (o `irreal cutulu`) | Hace aparecer al Rey Cthulhu ahora |
 | `irreal infectado` | Hace aparecer al Elite Krall infectado ahora (el contagio solo funciona desde la oleada 9) |
 | `irreal kayros poco` / `mucho` | Te da Poco o Mucho Kayros hasta la próxima oleada |
-| `irreal arma redeemer` / `painter` / `ion` / `lightning` | Cambia el arma del punto de Armas últimas hasta la próxima oleada |
+| `irreal ulti 1` / `2` / `3` / `4` | Cambia el arma del punto de Armas últimas hasta la próxima oleada: 1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun (también acepta `redeemer`, `painter`, `ion` y `lightning`) |
 
 Los comandos llaman a las mismas funciones que usan los mutadores en una partida normal, así que lo que se ve es lo que pasaría de verdad.
 

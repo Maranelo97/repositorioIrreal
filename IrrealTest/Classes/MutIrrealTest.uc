@@ -80,7 +80,7 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         SpawnKrall(Sender);
     else if (Cmd == "kayros")
         GiveKayros(Arg, Sender);
-    else if (Cmd == "arma")
+    else if (Cmd == "ulti")
         SetUltimateWeapon(Arg, Sender);
     else
         ShowHelp(Sender);
@@ -93,7 +93,7 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
     Sender.ClientMessage("  irreal infectado - hace aparecer al Elite Krall infectado");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
-    Sender.ClientMessage("  irreal arma redeemer/painter/ion/lightning - cambia el arma ultima");
+    Sender.ClientMessage("  irreal ulti 1-4 - cambia el arma ultima: 1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun");
 }
 
 function Invasion GetWaveInProgress(PlayerController Sender)
@@ -266,18 +266,32 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
 {
     local MutInvasionUltimates UltMut;
     local int WeaponIndex;
+    local string WeaponName;
 
-    if (Arg == "redeemer")
+    // Mismo orden que MutInvasionUltimates.SetUltimate; tambien acepta los nombres
+    if (Arg == "1" || Arg == "redeemer")
+    {
         WeaponIndex = 0;
-    else if (Arg == "painter")
+        WeaponName = "Redeemer";
+    }
+    else if (Arg == "2" || Arg == "painter")
+    {
         WeaponIndex = 1;
-    else if (Arg == "ion")
+        WeaponName = "Target Painter";
+    }
+    else if (Arg == "3" || Arg == "ion")
+    {
         WeaponIndex = 2;
-    else if (Arg == "lightning")
+        WeaponName = "Ion Painter";
+    }
+    else if (Arg == "4" || Arg == "lightning")
+    {
         WeaponIndex = 3;
+        WeaponName = "Lightning Gun";
+    }
     else
     {
-        Sender.ClientMessage("Uso: irreal arma redeemer/painter/ion/lightning");
+        Sender.ClientMessage("Uso: irreal ulti 1-4 (1 Redeemer, 2 Target Painter, 3 Ion Painter, 4 Lightning Gun)");
         return;
     }
 
@@ -295,12 +309,12 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     }
 
     UltMut.SetUltimate(WeaponIndex);
-    Sender.ClientMessage("Prueba: arma ultima cambiada hasta la proxima oleada.");
+    Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " hasta la proxima oleada.");
 }
 
 defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y arma redeemer/painter/ion/lightning (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y ulti 1-4 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }
