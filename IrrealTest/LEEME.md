@@ -17,8 +17,8 @@ Cada comando se puede escribir como `irreal ...` o como `mutate test ...` (por e
 |---|---|
 | `irreal` | Muestra la ayuda |
 | `irreal kill` | Mata a todos los monstruos y termina la oleada (Invasion los cuenta como muertes normales) |
-| `irreal cthulhu` | Hace aparecer al Rey Cthulhu ahora |
-| `irreal krall` | Hace aparecer al Elite Krall infectado ahora (el contagio solo funciona desde la oleada 9) |
+| `irreal cthulhu` (o `irreal cutulu`) | Hace aparecer al Rey Cthulhu ahora |
+| `irreal infectado` | Hace aparecer al Elite Krall infectado ahora (el contagio solo funciona desde la oleada 9) |
 | `irreal kayros poco` / `mucho` | Te da Poco o Mucho Kayros hasta la próxima oleada |
 | `irreal arma redeemer` / `painter` / `ion` / `lightning` | Cambia el arma del punto de Armas últimas hasta la próxima oleada |
 

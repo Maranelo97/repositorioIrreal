@@ -74,9 +74,9 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
 {
     if (Cmd == "kill")
         EndWave(Sender);
-    else if (Cmd == "cthulhu")
+    else if (Cmd == "cthulhu" || Cmd == "cutulu")
         SpawnCthulhu(Sender);
-    else if (Cmd == "krall")
+    else if (Cmd == "infectado")
         SpawnKrall(Sender);
     else if (Cmd == "kayros")
         GiveKayros(Arg, Sender);
@@ -90,8 +90,8 @@ function ShowHelp(PlayerController Sender)
 {
     Sender.ClientMessage("Comandos de prueba (irreal ... o mutate test ...):");
     Sender.ClientMessage("  irreal kill - mata a todos los monstruos y termina la oleada");
-    Sender.ClientMessage("  irreal cthulhu - hace aparecer al Rey Cthulhu");
-    Sender.ClientMessage("  irreal krall - hace aparecer al Elite Krall infectado");
+    Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
+    Sender.ClientMessage("  irreal infectado - hace aparecer al Elite Krall infectado");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal arma redeemer/painter/ion/lightning - cambia el arma ultima");
 }
@@ -302,5 +302,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, cthulhu, krall, kayros poco/mucho y arma redeemer/painter/ion/lightning (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y arma redeemer/painter/ion/lightning (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }
