@@ -168,5 +168,5 @@ defaultproperties
 {
     GroupName="SixSevenTeams"
     FriendlyName="Six Seven"
-    Description="En batallas por equipos, ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo."
+    Description="En batallas por equipos (excepto Invasion), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automatico de equipos."
 }

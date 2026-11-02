@@ -334,5 +334,5 @@ defaultproperties
     LastWaveNum=-1
     GroupName="ChatDokaBots"
     FriendlyName="Chat-doka Bots"
-    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter y burlas por nombre al morir un humano)."
+    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano)."
 }

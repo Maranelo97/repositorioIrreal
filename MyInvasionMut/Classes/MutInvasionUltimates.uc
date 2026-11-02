@@ -140,5 +140,5 @@ defaultproperties
 {
     GroupName="InvasionUltimates"
     FriendlyName="Invasion: Armas ultimas"
-    Description="Un punto de arma ulti/pesada rota al azar entre Redeemer, Target Painter, Ion Painter y Lightning Gun por ronda. Respawn instantaneo y las armas recogidas permanecen en el inventario del jugador."
+    Description="Un unico punto de arma alterna al azar entre Redeemer, Target Painter, Ion Painter y Lightning Gun en cada ronda, con respawn instantaneo. Los demas puntos de esas armas quedan vacios."
 }
