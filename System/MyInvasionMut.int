@@ -4,7 +4,7 @@ Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionPause
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInstantRespawn,Description="[Irreal] Es todo muy irreal||Elimina el cooldown de los ítems del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a ítems que los jugadores dejaron caer.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutMarianoskyRage,Description="[Irreal] Marianosky's rage||25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamaño, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos daño, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y más cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un compañero caído.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutChatDokaBots,Description="[Irreal] Chat-doka Bots||Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reacción al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). También silencia los mensajes de voz normales de los bots (se puede cambiar en Configurar mutadores).")
-Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="[Irreal] Necesitamos más BOTS||Ajusta dinámicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (máximo 24 bots).")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutNeedMoreBots,Description="[Irreal] Necesitamos más BOTS||Ajusta dinámicamente la cantidad de bots según los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un máximo (24 por defecto). Las dos se pueden cambiar en Configurar mutadores.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutInvasionUltimates,Description="[Irreal] Invasión: Armas últimas||Un único punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantáneo. Los demás puntos de esas armas quedan vacíos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Description="[Irreal] Six Seven||En batallas por equipos (excepto Invasión), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automático de equipos.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="[Irreal] ¿Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
@@ -31,7 +31,11 @@ Description="Hace que los bots escriban frases personalizadas y contextuales en 
 
 [MutNeedMoreBots]
 FriendlyName="[Irreal] Necesitamos más BOTS"
-Description="Ajusta dinámicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (máximo 24 bots)."
+BotsPerPlayerText="Bots por jugador"
+BotsPerPlayerDesc="Cantidad de bots que se agregan por cada jugador real conectado (de 0 a 8)."
+MaxBotsText="Máximo de bots"
+MaxBotsDesc="Tope de bots en la partida, sin importar cuántos jugadores haya (de 0 a 32)."
+Description="Ajusta dinámicamente la cantidad de bots según los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un máximo (24 por defecto). Las dos se pueden cambiar en Configurar mutadores."
 
 [MutSixSeven]
 FriendlyName="[Irreal] Six Seven"

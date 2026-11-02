@@ -1,6 +1,17 @@
 class MutNeedMoreBots extends Mutator;
 
-var int BotsPerPlayer;
+// Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
+var config int BotsPerPlayer;   // bots por cada jugador real
+var config int MaxBots;         // tope de bots en la partida
+
+var localized string BotsPerPlayerText, BotsPerPlayerDesc;
+var localized string MaxBotsText, MaxBotsDesc;
+
+// Cantidad de bots para esa cantidad de jugadores, dentro de los limites de las opciones
+function int DesiredBotCount(int RealPlayers)
+{
+    return Clamp(RealPlayers * Clamp(BotsPerPlayer, 0, 8), 0, Clamp(MaxBots, 0, 32));
+}
 
 function PostBeginPlay()
 {
@@ -16,9 +27,9 @@ function PostBeginPlay()
     {
         DM.bAutoNumBots = false;
         DM.bCustomBots = false;
-        DM.BotRatio = float(BotsPerPlayer);
-        DM.InitialBots = BotsPerPlayer;
-        DM.MinPlayers = 1 + BotsPerPlayer;
+        DM.BotRatio = float(Clamp(BotsPerPlayer, 0, 8));
+        DM.InitialBots = DesiredBotCount(1);
+        DM.MinPlayers = 1 + DesiredBotCount(1);
     }
 
     SetTimer(1.0, true);
@@ -39,7 +50,7 @@ function int GetRealPlayerCount()
         }
     }
 
-    // En partida instantanea (Standalone), asegurar base de 1 jugador (3 bots)
+    // En partida instantanea (Standalone), asegurar base de 1 jugador
     if (Count == 0 && Level.NetMode == NM_Standalone)
     {
         Count = 1;
@@ -58,11 +69,11 @@ function SyncPreMatchBots(DeathMatch DM)
     }
 
     RealPlayers = GetRealPlayerCount();
-    DesiredBots = Clamp(RealPlayers * BotsPerPlayer, 0, 24);
+    DesiredBots = DesiredBotCount(RealPlayers);
 
     DM.bAutoNumBots = false;
     DM.bCustomBots = false;
-    DM.BotRatio = float(BotsPerPlayer);
+    DM.BotRatio = float(Clamp(BotsPerPlayer, 0, 8));
     DM.InitialBots = DesiredBots;
     DM.MinPlayers = RealPlayers + DesiredBots;
 
@@ -178,12 +189,12 @@ function UpdateBotCount()
     }
 
     RealPlayers = GetRealPlayerCount();
-    DesiredBots = Clamp(RealPlayers * BotsPerPlayer, 0, 24);
+    DesiredBots = DesiredBotCount(RealPlayers);
 
-    // Sincronizar las propiedades de DeathMatch para que el motor mantenga la escala 3:1
+    // Sincronizar las propiedades de DeathMatch para que el motor mantenga la proporcion
     DM.bAutoNumBots = false;
     DM.bCustomBots = false;
-    DM.BotRatio = float(BotsPerPlayer);
+    DM.BotRatio = float(Clamp(BotsPerPlayer, 0, 8));
     DM.InitialBots = DesiredBots;
     DM.MinPlayers = RealPlayers + DesiredBots;
 
@@ -198,9 +209,9 @@ function UpdateBotCount()
 
     DM.RemainingBots = 0;
 
-    // Agregar bots si faltan para alcanzar 3 por cada jugador real
+    // Agregar bots si faltan para alcanzar la cantidad por jugador real
     SafetyCounter = 0;
-    while (DM.NumBots < DesiredBots && SafetyCounter < 24)
+    while (DM.NumBots < DesiredBots && SafetyCounter < 32)
     {
         if (!DM.AddBot())
         {
@@ -221,10 +232,32 @@ function Timer()
     UpdateBotCount();
 }
 
+static function FillPlayInfo(PlayInfo PlayInfo)
+{
+    Super.FillPlayInfo(PlayInfo);
+    PlayInfo.AddSetting(default.RulesGroup, "BotsPerPlayer", default.BotsPerPlayerText, 0, 1, "Text", "1;0:8");
+    PlayInfo.AddSetting(default.RulesGroup, "MaxBots", default.MaxBotsText, 0, 2, "Text", "2;0:32");
+}
+
+static event string GetDescriptionText(string PropName)
+{
+    switch (PropName)
+    {
+        case "BotsPerPlayer": return default.BotsPerPlayerDesc;
+        case "MaxBots":       return default.MaxBotsDesc;
+    }
+    return Super.GetDescriptionText(PropName);
+}
+
 defaultproperties
 {
     BotsPerPlayer=3
+    MaxBots=24
+    BotsPerPlayerText="Bots por jugador"
+    BotsPerPlayerDesc="Cantidad de bots que se agregan por cada jugador real conectado (de 0 a 8)."
+    MaxBotsText="Maximo de bots"
+    MaxBotsDesc="Tope de bots en la partida, sin importar cuantos jugadores haya (de 0 a 32)."
     GroupName="BotCountMut"
     FriendlyName="[Irreal] Necesitamos mas BOTS"
-    Description="Ajusta dinamicamente la cantidad de bots a una escala de 3 bots por cada jugador real conectado en la partida (maximo 24 bots)."
+    Description="Ajusta dinamicamente la cantidad de bots segun los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un maximo (24 por defecto). Las dos se pueden cambiar en Configurar mutadores."
 }
