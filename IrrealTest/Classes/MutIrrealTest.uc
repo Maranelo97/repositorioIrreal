@@ -282,28 +282,32 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
 {
     local MutInvasionUltimates UltMut;
     local int WeaponIndex;
-    local string WeaponName;
+    local string WeaponName, WeaponClassName;
 
-    // Mismo orden que MutInvasionUltimates.SetUltimate; tambien acepta los nombres
+    // Mismo orden y mismas clases que MutInvasionUltimates.SetUltimate; tambien acepta los nombres
     if (Arg == "1" || Arg == "redeemer")
     {
         WeaponIndex = 0;
         WeaponName = "Redeemer";
+        WeaponClassName = "XWeapons.Redeemer";
     }
     else if (Arg == "2" || Arg == "painter")
     {
         WeaponIndex = 1;
         WeaponName = "Target Painter";
+        WeaponClassName = "OnslaughtFull.ONSPainter";
     }
     else if (Arg == "3" || Arg == "ion")
     {
         WeaponIndex = 2;
         WeaponName = "Ion Painter";
+        WeaponClassName = "XWeapons.Painter";
     }
     else if (Arg == "4" || Arg == "lightning")
     {
         WeaponIndex = 3;
         WeaponName = "Lightning Gun";
+        WeaponClassName = "XWeapons.SniperRifle";
     }
     else
     {
@@ -332,6 +336,39 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " para la proxima oleada.");
     else
         Sender.ClientMessage("Prueba: arma ultima cambiada a " $ WeaponName $ " hasta la proxima oleada.");
+
+    GiveTestWeapon(Sender, WeaponClassName, WeaponName);
+}
+
+// Da el arma directamente (o la recarga si ya la tiene). No pasa por Kayros,
+// porque no es una recogida: para probar Kayros hay que levantarla del punto especial.
+function GiveTestWeapon(PlayerController Sender, string WeaponClassName, string WeaponName)
+{
+    local class<Weapon> WeaponClass;
+    local Weapon W;
+
+    if (Sender.Pawn == None || Sender.Pawn.Health <= 0)
+    {
+        Sender.ClientMessage("No estas vivo: el arma queda solo en el punto especial.");
+        return;
+    }
+
+    WeaponClass = class<Weapon>(DynamicLoadObject(WeaponClassName, class'Class'));
+    if (WeaponClass == None)
+        return;
+
+    W = Weapon(Sender.Pawn.FindInventoryType(WeaponClass));
+    if (W == None)
+    {
+        Sender.Pawn.GiveWeapon(WeaponClassName);
+        W = Weapon(Sender.Pawn.FindInventoryType(WeaponClass));
+    }
+
+    if (W != None)
+    {
+        W.FillToInitialAmmo();
+        Sender.ClientMessage("Prueba: te dimos " $ WeaponName $ ".");
+    }
 }
 
 defaultproperties
