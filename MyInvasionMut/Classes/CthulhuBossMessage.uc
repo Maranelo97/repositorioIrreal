@@ -72,7 +72,7 @@ static function RenderComplexMessage(Canvas C, out float XL, out float YL, optio
 
 defaultproperties
 {
-    CustomBossFont=Font'UT2003Fonts.FontEurostile37'
+    CustomBossFont=Font'UT2003Fonts.FontEurostile29'
     IntroRoarSound=Sound'SkaarjPack_rc.WarLord.laugh1WL'
     bComplexString=True
     bIsUnique=True

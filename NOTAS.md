@@ -13,24 +13,27 @@ UT2004 es de 2004 y no entiende UTF-8. Todo el texto que llega al juego tiene qu
 - En VS Code: abajo a la derecha, "Reopen with Encoding" → "Western (Windows 1252)" antes de editar.
 - El `.est` es una copia idéntica del `.int` (el juego en español lee el `.est`, en inglés el `.int`). Al cambiar uno, copiar el otro.
 
-### Fuentes: qué caracteres faltan
+### Fuentes: cuáles muestran bien los acentos
 
-Revisamos las fuentes del juego. Casi todas tienen todos los caracteres del español, salvo estas cuatro:
+Revisamos las imágenes de las fuentes del juego letra por letra. Estas cuatro tienen **todos los caracteres con acento corridos un lugar**: en vez de la letra pedida dibujan la siguiente (`é` sale `ê`, `É` sale `Ê`, `á` sale `â`, `Ñ` sale `Ò`, `¿` sale `À`...). Algunos lugares quedan vacíos.
 
-| Fuente | Dónde se usa | Le faltan |
-|---|---|---|
-| `UT2003Fonts.FontEurostile37` | Mensajes grandes del centro de la pantalla (Rey Cthulhu, Kayros, Fer) | `Á Í Ó Ú ¡ ü Ü` |
-| `UT2003Fonts.FontNeuzeit37` | (no la usamos) | `Á Í Ó Ú ¡ ü Ü` |
-| `UT2003Fonts.FontLarge1024x768` | Probablemente menús en resoluciones altas | `Á Í Ó Ú ¡ ü Ü` |
-| `UT2003Fonts.jFontLarge1024x768` | Probablemente menús en resoluciones altas | `Á Í Ó Ú ¡ ü Ü` |
+| Fuente | Problema |
+|---|---|
+| `UT2003Fonts.FontEurostile37` | Acentos corridos un lugar |
+| `UT2003Fonts.FontNeuzeit37` | Acentos corridos un lugar |
+| `UT2003Fonts.FontLarge1024x768` | Acentos corridos un lugar |
+| `UT2003Fonts.jFontLarge1024x768` | Acentos corridos un lugar |
 
-Sí tienen `É`, `Ñ`, `¿` y todas las minúsculas con acento (`á é í ó ú ñ`).
+Comprobado en el juego: con `FontEurostile37`, "TENÉS POCO KAYROS" se veía "TENÊS POCO KAYROS"; con `FontEurostile29` se ve bien.
+
+`UT2003Fonts.FontEurostile29` y `UT2003Fonts.FontEurostile24` dibujan bien todos los caracteres del español (`á é í ó ú ñ Á É Í Ó Ú Ñ ¿ ¡`).
 
 Por eso:
 
-- **Nombres y descripciones del menú:** usar minúsculas con acento y `¿` sin problema. Evitar `¡` y las mayúsculas `Á Í Ó Ú` (por eso el mutador se llama "Cuiden a Fer!" sin `¡`).
-- **Mensajes grandes (todo en mayúsculas):** solo `É`, `Ñ` y `¿`. Por ejemplo "TENÉS MUCHO KAYROS" funciona, pero "ATENCIÓN" mostraría un hueco en la `Ó`. Si hace falta otra letra, `UT2003Fonts.FontEurostile24` tiene todas (es un poco más chica).
-- **Chat de los bots:** usa fuentes completas; `¡`, `¿` y `Ñ` ya funcionan.
+- **Mensajes grandes del centro de la pantalla** (Rey Cthulhu, Kayros, Fer): usan `FontEurostile29`. No volver a `FontEurostile37` si los mensajes llevan acentos.
+- **Nombres y descripciones del menú:** el menú no usa esas cuatro fuentes; en el juego se vieron bien las minúsculas con acento y `¿`. `¡` y las mayúsculas `Á Í Ó Ú` no se probaron todavía en el menú (por eso el mutador sigue llamándose "Cuiden a Fer!" sin `¡`).
+- **Chat de los bots:** `¡`, `¿` y `Ñ` se ven bien (comprobado en el juego).
+- Antes de usar otra fuente con acentos, probarla en el juego: que tenga una imagen para cada letra no garantiza que sea la letra correcta.
 
 ### Acentos dentro del código (`.uc`)
 
@@ -56,6 +59,6 @@ Por eso:
 
 - **Oleadas:** `Invasion.WaveNum` empieza en 0; en pantalla se muestra `WaveNum + 1`. La oleada 9 es `WaveNum == 8`.
 - **Nombres en el menú:** la lista de mutadores se ordena alfabéticamente sin distinguir mayúsculas. Con el prefijo `[Irreal]` los nuestros quedan juntos al principio. El juego guarda la selección por nombre de clase, así que cambiar el nombre visible no rompe configuraciones guardadas. Los nombres tienen que ser únicos.
-- **Recursos:** el paquete se compila solo con código. Usa recursos del juego en lugar de recursos propios: la skin original del WarLord (con brillo violeta/rojo), el sonido `SkaarjPack_rc.WarLord.laugh1WL` y la fuente `UT2003Fonts.FontEurostile37`.
+- **Recursos:** el paquete se compila solo con código. Usa recursos del juego en lugar de recursos propios: la skin original del WarLord (con brillo violeta/rojo), el sonido `SkaarjPack_rc.WarLord.laugh1WL` y la fuente `UT2003Fonts.FontEurostile29` para los mensajes grandes.
 - **Tecla para la siguiente oleada (Control de plagas FV):** el comando es `mutate nextwave`. No conviene asignarlo a la `Q`, que por defecto es el translocator. Por ejemplo: `set input H mutate nextwave` en la consola (queda guardado).
 - **Instalar una versión nueva:** todos (host y clientes) tienen que tener los mismos `MyInvasionMut.u`, `.ucl`, `.int` y `.est` en la carpeta `System`, con el juego cerrado. Si no, aparece el error de versión del paquete no coincidente.

@@ -69,7 +69,7 @@ static function RenderComplexMessage(
 
 defaultproperties
 {
-    CustomKayrosFont=Font'UT2003Fonts.FontEurostile37'
+    CustomKayrosFont=Font'UT2003Fonts.FontEurostile29'
     bComplexString=True
     bIsUnique=True
     bFadeMessage=True
