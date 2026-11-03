@@ -73,6 +73,8 @@ function DropDoubleDamageLoot(Monster M)
 
 function int NetDamage(int OriginalDamage, int Damage, pawn injured, pawn instigatedBy, vector HitLocation, out vector Momentum, class<DamageType> DamageType)
 {
+    local int Reduction;
+
     if (NextGameRules != None)
     {
         Damage = NextGameRules.NetDamage(OriginalDamage, Damage, injured, instigatedBy, HitLocation, Momentum, DamageType);
@@ -90,17 +92,19 @@ function int NetDamage(int OriginalDamage, int Damage, pawn injured, pawn instig
         // Reduce a la mitad el retroceso para que las armas no lo dejen inmovilizado o suspendido en el aire
         Momentum *= 0.50;
 
-        // Si el dano proviene de un Bot aliado, reduccion pasiva del 65% (recibe solo el 35% de dano)
+        // Las reducciones salen de las opciones de MutMarianoskyRage (65% y 50% por defecto).
+        // Si el dano proviene de un Bot aliado, reduccion mayor
         // para que no lo liquiden los bots en segundos y el golpe de gracia dependa de los jugadores humanos
         if (instigatedBy != None && Bot(instigatedBy.Controller) != None)
         {
-            Damage = Max(1, int(float(Damage) * 0.35 + 0.5));
+            Reduction = Clamp(class'MutMarianoskyRage'.default.BotDamageReduction, 0, 95);
         }
         else
         {
-            // Dano general de proyectiles y ataques (humanos / ambiente): 50% de reduccion pasiva
-            Damage = Max(1, int(float(Damage) * 0.50 + 0.5));
+            // Dano general de proyectiles y ataques (humanos / ambiente)
+            Reduction = Clamp(class'MutMarianoskyRage'.default.PlayerDamageReduction, 0, 95);
         }
+        Damage = Max(1, int(float(Damage) * float(100 - Reduction) / 100.0 + 0.5));
     }
 
     return Damage;

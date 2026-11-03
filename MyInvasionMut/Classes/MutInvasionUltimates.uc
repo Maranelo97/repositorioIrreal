@@ -1,6 +1,20 @@
 class MutInvasionUltimates extends Mutator;
 
+// Opciones de "Configurar mutadores": que armas entran en la rotacion del punto especial
+var config bool bRedeemer;
+var config bool bIonPainter;
+var config bool bLightningGun;
+var config bool bRepeatPickup;   // si se desactiva, cada jugador lo recoge una sola vez por oleada
+var config bool bBotsCanPickup;  // si se desactiva, los bots no recogen ni buscan el arma del punto especial
+
+var localized string RedeemerText, RedeemerDesc;
+var localized string IonPainterText, IonPainterDesc;
+var localized string LightningGunText, LightningGunDesc;
+var localized string RepeatPickupText, RepeatPickupDesc;
+var localized string BotsCanPickupText, BotsCanPickupDesc;
+
 var xWeaponBase UltimateBase;
+var UltimatesRules Rules;
 var int CurrentWaveNum;
 var bool bInitialized;
 
@@ -18,6 +32,8 @@ function PostBeginPlay()
         GR = Spawn(class'UltimatesRules');
         if (GR != None)
         {
+            GR.UltimatesMut = self;
+            Rules = GR;
             if (Level.Game.GameRulesModifiers == None)
                 Level.Game.GameRulesModifiers = GR;
             else
@@ -93,6 +109,11 @@ function SetUltimate(int WeaponIndex)
         return;
 
     RemoveBasePickup(UltimateBase);
+
+    // Arma nueva en el punto: todos pueden volver a recogerla
+    if (Rules != None)
+        Rules.ResetPickups();
+
     switch (WeaponIndex)
     {
         case 0:
@@ -109,6 +130,34 @@ function SetUltimate(int WeaponIndex)
             break;
     }
     UltimateBase.SpawnPickup();
+}
+
+// Elige al azar entre las armas activadas (mismos indices que SetUltimate).
+// Si estan todas desactivadas, usa las tres para que el punto no quede vacio.
+function int PickUltimateIndex()
+{
+    local int Options[3];
+    local int Count;
+
+    if (bRedeemer)
+    {
+        Options[Count] = 0;
+        Count++;
+    }
+    if (bIonPainter)
+    {
+        Options[Count] = 1;
+        Count++;
+    }
+    if (bLightningGun)
+    {
+        Options[Count] = 2;
+        Count++;
+    }
+
+    if (Count == 0)
+        return Rand(3);
+    return Options[Rand(Count)];
 }
 
 function Timer()
@@ -133,24 +182,65 @@ function Timer()
         }
 
         DisableOtherSpecialBases();
-        SetUltimate(Rand(3));
+        SetUltimate(PickUltimateIndex());
         bInitialized = true;
         SetTimer(1.0, true);
         return;
     }
 
-    // Cada ronda elige al azar entre las tres; se permite repetir la ronda anterior.
-    if (InvGame.bWaveInProgress && InvGame.WaveNum != CurrentWaveNum)
+    // Cada ronda elige al azar entre las activadas; se permite repetir la ronda anterior.
+    // Invasion suma WaveNum apenas termina la oleada, asi que el arma cambia al empezar
+    // el descanso: quien ya la uso puede recoger la nueva antes de la siguiente oleada.
+    if (InvGame.WaveNum != CurrentWaveNum)
     {
         if (CurrentWaveNum >= 0)
-            SetUltimate(Rand(3));
+            SetUltimate(PickUltimateIndex());
         CurrentWaveNum = InvGame.WaveNum;
     }
 }
 
+static function FillPlayInfo(PlayInfo PlayInfo)
+{
+    Super.FillPlayInfo(PlayInfo);
+    PlayInfo.AddSetting(default.RulesGroup, "bRedeemer", default.RedeemerText, 0, 1, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bIonPainter", default.IonPainterText, 0, 2, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bLightningGun", default.LightningGunText, 0, 3, "Check");
+    // Solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
+    PlayInfo.AddSetting(default.RulesGroup, "bRepeatPickup", default.RepeatPickupText, 0, 4, "Check", , , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bBotsCanPickup", default.BotsCanPickupText, 0, 5, "Check", , , , True);
+}
+
+static event string GetDescriptionText(string PropName)
+{
+    switch (PropName)
+    {
+        case "bRedeemer":     return default.RedeemerDesc;
+        case "bIonPainter":   return default.IonPainterDesc;
+        case "bLightningGun": return default.LightningGunDesc;
+        case "bRepeatPickup": return default.RepeatPickupDesc;
+        case "bBotsCanPickup": return default.BotsCanPickupDesc;
+    }
+    return Super.GetDescriptionText(PropName);
+}
+
 defaultproperties
 {
+    bRedeemer=True
+    bIonPainter=True
+    bLightningGun=True
+    bRepeatPickup=True
+    bBotsCanPickup=False
+    BotsCanPickupText="Los bots pueden recoger las armas ultimas"
+    BotsCanPickupDesc="Si se desactiva, los bots no buscan el punto especial y, si pasan por encima, no recogen el arma: queda para los jugadores [por defecto: desactivada]"
+    RepeatPickupText="Recogerla varias veces por oleada"
+    RepeatPickupDesc="Cada jugador puede volver al punto especial para recargar el arma durante la oleada. Si se desactiva, cada uno la recoge una sola vez por oleada [por defecto: activada]"
+    RedeemerText="Redeemer"
+    RedeemerDesc="El Redeemer puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
+    IonPainterText="Ion Painter"
+    IonPainterDesc="El Ion Painter puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
+    LightningGunText="Lightning Gun"
+    LightningGunDesc="La Lightning Gun puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
     GroupName="InvasionUltimates"
     FriendlyName="[Irreal] Invasion: Armas ultimas"
-    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun en cada ronda, con respawn instantaneo. Los demas puntos de esas armas quedan vacios."
+    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no)."
 }

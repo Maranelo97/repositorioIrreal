@@ -1,6 +1,20 @@
 class MutMarianoskyRage extends Mutator;
 
-var float ChampionChance;
+// Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
+var config int ChancePercent;           // probabilidad por oleada de que aparezca el Rey Cthulhu
+var config int BaseHealth;              // vida base
+var config int HealthPerPlayer;         // vida extra por cada jugador humano
+var config int EnragePercent;           // porcentaje de vida al que entra en furia
+var config int PlayerDamageReduction;   // % menos de dano recibido de jugadores y del ambiente
+var config int BotDamageReduction;      // % menos de dano recibido de bots
+
+var localized string ChancePercentText, ChancePercentDesc;
+var localized string BaseHealthText, BaseHealthDesc;
+var localized string HealthPerPlayerText, HealthPerPlayerDesc;
+var localized string EnragePercentText, EnragePercentDesc;
+var localized string PlayerDamageReductionText, PlayerDamageReductionDesc;
+var localized string BotDamageReductionText, BotDamageReductionDesc;
+
 var int CurrentWaveNum;
 var bool bWaveHasChampion;
 var bool bChampionSpawnedThisWave;
@@ -307,9 +321,9 @@ function PromoteToChampion(Monster M)
     M.WaterSpeed = M.Default.WaterSpeed * 1.20;
     M.AccelRate = M.Default.AccelRate * 1.20;
 
-    // Vida base 2000, +500 por cada jugador humano; escudo 300.
+    // Vida base (2000) + vida por cada jugador humano (500), segun las opciones; escudo 300.
     HumanPlayers = CountActiveHumanPlayers();
-    M.Health = 2000 + (HumanPlayers * 500);
+    M.Health = Clamp(BaseHealth, 100, 20000) + (HumanPlayers * Clamp(HealthPerPlayer, 0, 5000));
     M.HealthMax = M.Health;
     M.ShieldStrengthMax = 300.0;
     M.ShieldStrength = 300.0;
@@ -462,7 +476,7 @@ function Timer()
         bChampionEnraged = false;
         EnrageTickCounter = 0;
         CleanupBossAttachments();
-        bWaveHasChampion = (FRand() < ChampionChance);
+        bWaveHasChampion = (FRand() < float(Clamp(ChancePercent, 0, 100)) / 100.0);
 
         if (bWaveHasChampion)
         {
@@ -483,7 +497,7 @@ function Timer()
             EnsureBossAttachments(M);
             KeepChampionAtLowerAltitude(M);
 
-            if (!bChampionEnraged && M.Health <= int(M.HealthMax * 0.35))
+            if (!bChampionEnraged && M.Health <= int(M.HealthMax * float(Clamp(EnragePercent, 0, 100)) / 100.0))
             {
                 TriggerEnrage(M);
             }
@@ -526,11 +540,54 @@ function Timer()
     }
 }
 
+static function FillPlayInfo(PlayInfo PlayInfo)
+{
+    Super.FillPlayInfo(PlayInfo);
+    PlayInfo.AddSetting(default.RulesGroup, "ChancePercent", default.ChancePercentText, 0, 1, "Text", "3;0:100");
+    PlayInfo.AddSetting(default.RulesGroup, "BaseHealth", default.BaseHealthText, 0, 2, "Text", "5;100:20000");
+    PlayInfo.AddSetting(default.RulesGroup, "HealthPerPlayer", default.HealthPerPlayerText, 0, 3, "Text", "4;0:5000");
+    // Solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
+    PlayInfo.AddSetting(default.RulesGroup, "EnragePercent", default.EnragePercentText, 0, 4, "Text", "3;0:100", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "PlayerDamageReduction", default.PlayerDamageReductionText, 0, 5, "Text", "2;0:95", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "BotDamageReduction", default.BotDamageReductionText, 0, 6, "Text", "2;0:95", , , True);
+}
+
+static event string GetDescriptionText(string PropName)
+{
+    switch (PropName)
+    {
+        case "ChancePercent":         return default.ChancePercentDesc;
+        case "BaseHealth":            return default.BaseHealthDesc;
+        case "HealthPerPlayer":       return default.HealthPerPlayerDesc;
+        case "EnragePercent":         return default.EnragePercentDesc;
+        case "PlayerDamageReduction": return default.PlayerDamageReductionDesc;
+        case "BotDamageReduction":    return default.BotDamageReductionDesc;
+    }
+    return Super.GetDescriptionText(PropName);
+}
+
 defaultproperties
 {
-    ChampionChance=0.25
+    ChancePercent=25
+    BaseHealth=2000
+    HealthPerPlayer=500
+    EnragePercent=35
+    PlayerDamageReduction=50
+    BotDamageReduction=65
+    ChancePercentText="Probabilidad por oleada (%)"
+    ChancePercentDesc="Probabilidad de que el Rey Cthulhu aparezca en cada oleada (de 0 a 100) [por defecto: 25]"
+    BaseHealthText="Vida base"
+    BaseHealthDesc="Vida del Rey Cthulhu antes de sumar la vida por jugador (de 100 a 20000) [por defecto: 2000]"
+    HealthPerPlayerText="Vida extra por jugador"
+    HealthPerPlayerDesc="Vida que se suma por cada jugador humano en la partida (de 0 a 5000) [por defecto: 500]"
+    EnragePercentText="Furia al (% de vida)"
+    EnragePercentDesc="Porcentaje de vida al que entra en furia: brillo rojo, +35% de velocidad y mas cohetes (de 0 a 100, 0 = nunca) [por defecto: 35]"
+    PlayerDamageReductionText="Reduccion de dano de jugadores (%)"
+    PlayerDamageReductionDesc="Cuanto menos dano recibe de los jugadores y del ambiente (de 0 a 95) [por defecto: 50]"
+    BotDamageReductionText="Reduccion de dano de bots (%)"
+    BotDamageReductionDesc="Cuanto menos dano recibe de los bots, para que el golpe final dependa de los jugadores (de 0 a 95) [por defecto: 65]"
     CurrentWaveNum=-1
     GroupName="MarianoskyRage"
     FriendlyName="[Irreal] Marianosky's rage"
-    Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamano, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos dano, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y mas cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un companero caido."
+    Description="25% de probabilidad por oleada de que aparezca el Rey Cthulhu (WarLord con +30% de tamano, brillo violeta, llamas en alas y pies y corona giratoria; 2000 HP base + 500 por jugador humano, 300 de escudo y +20% de velocidad; recibe 50% menos dano, o 65% menos si lo atacan bots, y 50% menos retroceso). Al 35% de vida entra en furia: brillo rojo, +35% de velocidad y mas cohetes. Al morir da doble puntaje, suelta un Double Damage, otorga +25 de escudo al equipo y revive a un companero caido. Esos son los valores por defecto: la probabilidad, la vida, la furia y la reduccion de dano se pueden cambiar en Configurar mutadores."
 }

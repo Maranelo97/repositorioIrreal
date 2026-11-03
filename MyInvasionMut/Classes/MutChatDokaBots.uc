@@ -10,9 +10,26 @@ var int LastWaveNum;
 var bool bWasWaveActive;
 var bool bChampionAnnounced;
 
-// Opcion de "Configurar mutadores": silencia los mensajes de voz normales de los bots
-var config bool bSilenceBotVoice;
+// Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
+var config bool bSilenceBotVoice;        // silencia los mensajes de voz normales de los bots
+var config bool bRandomPhrases;          // frases al azar (las de cada tantos segundos y las de bajas, poca vida y oleadas)
+var config bool bDeathTaunts;            // burlas por nombre al morir un jugador
+var config bool bCthulhuReactions;       // reaccion cuando aparece el Rey Cthulhu
+var config bool bUltimateKillReactions;  // festejos de bajas con Redeemer / Ion Painter
+var config int PhraseInterval;           // segundos entre frases al azar
+
 var localized string SilenceBotVoiceText, SilenceBotVoiceDesc;
+var localized string RandomPhrasesText, RandomPhrasesDesc;
+var localized string DeathTauntsText, DeathTauntsDesc;
+var localized string CthulhuReactionsText, CthulhuReactionsDesc;
+var localized string UltimateKillReactionsText, UltimateKillReactionsDesc;
+var localized string PhraseIntervalText, PhraseIntervalDesc;
+
+// Segundos entre frases al azar, dentro del rango de la opcion
+function float ChatInterval()
+{
+    return float(Clamp(PhraseInterval, 5, 300));
+}
 
 function PostBeginPlay()
 {
@@ -43,8 +60,8 @@ function PostBeginPlay()
     if (bSilenceBotVoice && Level.Game != None && Level.Game.BroadcastHandler != None)
         Level.Game.BroadcastHandler.RegisterBroadcastHandler(Spawn(class'ChatDokaBroadcastHandler'));
 
-    LastChatTime = -30.0;
-    NextRandomChatTime = Level.TimeSeconds + 30.0;
+    LastChatTime = -ChatInterval();
+    NextRandomChatTime = Level.TimeSeconds + ChatInterval();
     SetTimer(1.0, true);
 }
 
@@ -122,7 +139,7 @@ function SendBotMessage(Bot Speaker, string Msg)
     }
 
     LastChatTime = Level.TimeSeconds;
-    NextRandomChatTime = Level.TimeSeconds + 30.0;
+    NextRandomChatTime = Level.TimeSeconds + ChatInterval();
 
     for (C = Level.ControllerList; C != None; C = C.NextController)
     {
@@ -136,8 +153,8 @@ function SendBotMessage(Bot Speaker, string Msg)
 
 function TriggerBotChat(Bot PreferredBot, float Chance)
 {
-    // Respeta el intervalo de 30 segundos entre mensajes de frases generales
-    if (Level.TimeSeconds - LastChatTime < 30.0)
+    // Respeta el intervalo entre mensajes de frases generales
+    if (!bRandomPhrases || Level.TimeSeconds - LastChatTime < ChatInterval())
     {
         return;
     }
@@ -152,6 +169,9 @@ function TriggerCthulhuBossChat()
 {
     local string Msg;
 
+    if (!bCthulhuReactions)
+        return;
+
     Msg = CthulhuPhrases[Rand(ArrayCount(CthulhuPhrases))];
     SendBotMessage(None, Msg);
 }
@@ -160,7 +180,7 @@ function TriggerUltimateKillChat(Bot KillerBot)
 {
     local string Msg;
 
-    if (Level.TimeSeconds - LastChatTime < 2.5)
+    if (!bUltimateKillReactions || Level.TimeSeconds - LastChatTime < 2.5)
     {
         return;
     }
@@ -173,7 +193,7 @@ function TriggerHumanDeathTaunt(Controller DeadHuman)
 {
     local string VictimName;
 
-    if (DeadHuman == None || DeadHuman.PlayerReplicationInfo == None)
+    if (!bDeathTaunts || DeadHuman == None || DeadHuman.PlayerReplicationInfo == None)
     {
         return;
     }
@@ -276,32 +296,60 @@ function Timer()
         }
     }
 
-    // Comentarios cada 30 segundos en la partida
-    if (Level.TimeSeconds >= NextRandomChatTime)
+    // Comentarios cada tantos segundos en la partida
+    if (bRandomPhrases && Level.TimeSeconds >= NextRandomChatTime)
     {
         SendBotMessage(None, GetRandomPhrase());
-        NextRandomChatTime = Level.TimeSeconds + 30.0;
+        NextRandomChatTime = Level.TimeSeconds + ChatInterval();
     }
 }
 
 static function FillPlayInfo(PlayInfo PlayInfo)
 {
     Super.FillPlayInfo(PlayInfo);
-    PlayInfo.AddSetting(default.RulesGroup, "bSilenceBotVoice", default.SilenceBotVoiceText, 0, 1, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bRandomPhrases", default.RandomPhrasesText, 0, 1, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bDeathTaunts", default.DeathTauntsText, 0, 2, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bCthulhuReactions", default.CthulhuReactionsText, 0, 3, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bUltimateKillReactions", default.UltimateKillReactionsText, 0, 4, "Check");
+    // Solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
+    PlayInfo.AddSetting(default.RulesGroup, "bSilenceBotVoice", default.SilenceBotVoiceText, 0, 5, "Check", , , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "PhraseInterval", default.PhraseIntervalText, 0, 6, "Text", "3;5:300", , , True);
 }
 
 static event string GetDescriptionText(string PropName)
 {
-    if (PropName == "bSilenceBotVoice")
-        return default.SilenceBotVoiceDesc;
+    switch (PropName)
+    {
+        case "bSilenceBotVoice":       return default.SilenceBotVoiceDesc;
+        case "bRandomPhrases":         return default.RandomPhrasesDesc;
+        case "bDeathTaunts":           return default.DeathTauntsDesc;
+        case "bCthulhuReactions":      return default.CthulhuReactionsDesc;
+        case "bUltimateKillReactions": return default.UltimateKillReactionsDesc;
+        case "PhraseInterval":         return default.PhraseIntervalDesc;
+    }
     return Super.GetDescriptionText(PropName);
 }
 
 defaultproperties
 {
     bSilenceBotVoice=True
+    bRandomPhrases=True
+    bDeathTaunts=True
+    bCthulhuReactions=True
+    bUltimateKillReactions=True
+    PhraseInterval=30
     SilenceBotVoiceText="Silenciar los mensajes de voz de los bots"
-    SilenceBotVoiceDesc="Saca los mensajes de voz normales de los bots (por ejemplo I've got your back), asi en el chat solo quedan las frases de Chat-doka. Los bots siguen obedeciendo ordenes, pero no responden en voz alta."
+    SilenceBotVoiceDesc="Saca los mensajes de voz normales de los bots (por ejemplo I've got your back), asi en el chat solo quedan las frases de Chat-doka. Los bots siguen obedeciendo ordenes, pero no responden en voz alta [por defecto: activada]"
+    RandomPhrasesText="Frases al azar"
+    RandomPhrasesDesc="Frases de la lista general: una cada tantos segundos y algunas al matar, morir, quedar con poca vida y al empezar o terminar una oleada. Si se desactiva, solo quedan las reacciones [por defecto: activada]"
+    DeathTauntsText="Burlas al morir un jugador"
+    DeathTauntsDesc="Un bot se burla por nombre del jugador que muere [por defecto: activada]"
+    CthulhuReactionsText="Reacciones al Rey Cthulhu"
+    CthulhuReactionsDesc="Un bot reacciona cuando aparece el Rey Cthulhu [por defecto: activada]"
+    UltimateKillReactionsText="Festejos con Redeemer e Ion Painter"
+    UltimateKillReactionsDesc="Un bot festeja cuando mata con el Redeemer o el Ion Painter [por defecto: activada]"
+    PhraseIntervalText="Segundos entre frases al azar"
+    PhraseIntervalDesc="Cada cuantos segundos un bot dice una frase al azar; tambien es el tiempo minimo entre las frases de la lista general (de 5 a 300) [por defecto: 30]"
     Phrases(0)="CUANTO VALE LOS ELAO DE 100?, VALEN 100!!!"
     Phrases(1)="NO TE PODES EMBARAZAR DE UN TACHERO!"
     Phrases(2)="NO PODES EMBARAZAR A UNA JUDIA!"
@@ -365,5 +413,5 @@ defaultproperties
     LastWaveNum=-1
     GroupName="ChatDokaBots"
     FriendlyName="[Irreal] Chat-doka Bots"
-    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (una frase al azar cada 30 segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots (se puede cambiar en Configurar mutadores)."
+    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores."
 }
