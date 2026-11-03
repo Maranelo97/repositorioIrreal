@@ -166,6 +166,9 @@ function Timer()
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     GroupName="SixSevenTeams"
     FriendlyName="[Irreal] Six Seven"
     Description="En batallas por equipos (excepto Invasion), ubica siempre a todos los jugadores reales en el Equipo Azul y a todos los bots en el Equipo Rojo. Desactiva el balanceo automatico de equipos."

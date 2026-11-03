@@ -373,6 +373,9 @@ static event string GetDescriptionText(string PropName)
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     bAdrenalineUltimates=True
     AdrenalineUltimatesText="Armas ultimas con adrenalina"
     AdrenalineUltimatesDesc="El Redeemer, el Ion Painter y la Lightning Gun gastan adrenalina en vez de municion. Si se desactiva, usan municion normal y solo quedan los combos [por defecto: activada]"

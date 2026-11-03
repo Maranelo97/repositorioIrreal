@@ -54,6 +54,9 @@ static event string GetDescriptionText(string PropName)
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     bColoredDots=True
     bShowHeightLines=True
     MinHeightDiff=200.0

@@ -345,6 +345,9 @@ function Timer()
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     CurrentWaveNum=-1
     GroupName="KayrosMut"
     FriendlyName="[Irreal] Poco o mucho Kayros?"

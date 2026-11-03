@@ -45,6 +45,9 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     GroupName="InstantRespawn"
     FriendlyName="[Irreal] Es todo muy irreal"
     Description="Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer."

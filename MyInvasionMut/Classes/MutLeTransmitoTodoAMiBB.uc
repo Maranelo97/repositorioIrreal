@@ -206,6 +206,9 @@ function Timer()
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     InfectionChance=0.3
     InfectionRadius=180.0
     CureTime=10.0
