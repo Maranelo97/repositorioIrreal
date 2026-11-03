@@ -51,7 +51,8 @@ Por eso:
   | `¿` | `Chr(191)` | `¡` | `Chr(161)` |
 
   Ejemplo: `"TEN" $ Chr(201) $ "S MUCHO KAYROS"`.
-- En `defaultproperties` no se puede usar `Chr()`. Si un texto por defecto necesita acentos, asignarlo en `PostBeginPlay` (como hace `MutChatDokaBots` con `Phrases[6]` y `Phrases[36]`) o dejarlo sin acentos.
+- En `defaultproperties` no se puede usar `Chr()`. Si un texto por defecto necesita acentos, asignarlo en `PostBeginPlay` o dejarlo sin acentos.
+- Otra opción, la que usan las frases de `MutChatDokaBots`: escribir los acentos tal cual en el `.uc` y pasar el texto por `FixAccents` antes de usarlo. El compilador guarda los dos bytes UTF-8 de cada letra (por ejemplo `C3 81` para `Á`) y `FixAccents` los vuelve a unir en el juego. Así las frases se leen bien en GitHub y se pueden escribir con tildes normalmente. Para las frases con el nombre de un jugador se usa `WithName("... %n ...", Nombre)`, que arregla los acentos sin tocar el nombre.
 - Los `FriendlyName` y `Description` de las clases quedan **sin acentos** a propósito: son solo el texto de respaldo si falta el `.int`. Lo que se ve en el menú sale del `.int`/`.est`.
 - En los comentarios del código, mejor sin acentos para no mezclar codificaciones.
 
