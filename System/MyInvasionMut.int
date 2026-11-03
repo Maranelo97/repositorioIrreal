@@ -10,6 +10,7 @@ Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutSixSeven,Desc
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutKayros,Description="[Irreal] ¿Poco o mucho Kayros?||En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups).")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutLeTransmitoTodoAMiBB,Description="[Irreal] Le transmito todo a mi BB||Desde la oleada 9, cada oleada tiene 30% de probabilidad de que aparezca un Elite Krall cuyo rayo no hace daño pero infecta (-1 HP por segundo). La infección se contagia por cercanía y se cura apuntando 10 segundos seguidos con el disparo secundario de la Entrelazadora. Las infecciones se curan al terminar cada oleada.")
 Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutRadarMejorado,Description="[Irreal] Sigan viendo||Reemplaza los puntos del radar de Invasión por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo más grande y Fer (en Cuiden a Fer!) en magenta. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Además, cada monstruo o jugador que está en otro piso muestra una línea vertical: si está arriba, el punto queda sobre la línea; si está abajo, el punto cuelga de la línea. Cuanto más larga la línea, más diferencia de altura. Cada parte se puede desactivar en Configurar mutadores.")
+Object=(Class=Class,MetaClass=Engine.Mutator,Name=MyInvasionMut.MutGigachadrenalina,Description="[Irreal] GIGACHADrenalina||El Redeemer, el Ion Painter y la Lightning Gun usan adrenalina en vez de munición: cada disparo cuesta adrenalina (50, 25 y 5 por defecto) y al agarrar una se llena la adrenalina. Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Visión (cuatro veces izquierda), que marca a través de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups útiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Todo se cambia en Configurar mutadores.")
 
 [MutInvasionPause]
 FriendlyName="[Irreal] Control de plagas FV"
@@ -102,3 +103,37 @@ ShowHeightLinesDesc="Muestra una línea vertical en cada monstruo o jugador que e
 MinHeightDiffText="Diferencia mínima de altura"
 MinHeightDiffDesc="Diferencia de altura (en unidades, pies contra pies) a partir de la cual se dibuja la línea. Un piso suele estar a entre 200 y 500 unidades. Más bajo: más sensible (de 50 a 2000) [por defecto: 200]"
 Description="Reemplaza los puntos del radar de Invasión por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo más grande y Fer (en Cuiden a Fer!) en magenta. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Además, cada monstruo o jugador que está en otro piso muestra una línea vertical: si está arriba, el punto queda sobre la línea; si está abajo, el punto cuelga de la línea. Cuanto más larga la línea, más diferencia de altura. Cada parte se puede desactivar en Configurar mutadores."
+
+[MutGigachadrenalina]
+FriendlyName="[Irreal] GIGACHADrenalina"
+AdrenalineUltimatesText="Armas últimas con adrenalina"
+AdrenalineUltimatesDesc="El Redeemer, el Ion Painter y la Lightning Gun gastan adrenalina en vez de munición. Si se desactiva, usan munición normal y solo quedan los combos [por defecto: activada]"
+RedeemerCostText="Adrenalina por disparo: Redeemer"
+RedeemerCostDesc="Adrenalina que cuesta cada disparo del Redeemer (de 0 a 100, 0 = gratis) [por defecto: 50]"
+IonPainterCostText="Adrenalina por disparo: Ion Painter"
+IonPainterCostDesc="Adrenalina que cuesta cada disparo del Ion Painter (de 0 a 100, 0 = gratis) [por defecto: 25]"
+LightningGunCostText="Adrenalina por disparo: Lightning Gun"
+LightningGunCostDesc="Adrenalina que cuesta cada disparo de la Lightning Gun (de 0 a 100, 0 = gratis) [por defecto: 5]"
+FillAdrenalineOnPickupText="Llenar la adrenalina al agarrar un arma última"
+FlightComboText="Combo Vuelo"
+FlightComboDesc="Cuatro veces derecha: volás libremente durante 20 segundos (con el gasto normal); saltar sube y agacharse baja [por defecto: activada]"
+VisionComboText="Combo Visión"
+VisionComboDesc="Cuatro veces izquierda: durante 30 segundos (con el gasto normal) quedan marcados a través de las paredes los monstruos (amarillo), los otros jugadores (verde), el Rey Cthulhu (rojo) y los pickups importantes que podés agarrar (blanco). Los marcos se llenan según la vida que les queda; el de los jugadores muestra la vida a la izquierda y el escudo a la derecha [por defecto: activada]"
+CancelCombosText="Cortar el combo repitiendo las teclas"
+CancelCombosDesc="Si repetís las teclas del combo que tenés activo, se corta y te queda la adrenalina que sobraba. Vale para todos los combos [por defecto: activada]"
+ChainCombosText="Encadenar combos"
+ChainCombosDesc="Con un combo activo, si marcás las teclas de otro combo cambiás a ese, con la adrenalina que te quedaba. Vale para todos los combos [por defecto: activada]"
+ComboDrainPercentText="Gasto de adrenalina de los combos (%)"
+ComboDrainPercentDesc="Qué tan rápido gastan adrenalina los combos: con 50 duran el doble y con 200 la mitad. Vale para todos los combos (de 0 a 400, 0 = no gastan) [por defecto: 100]"
+AdrenalinePillAmountText="Adrenalina por pastilla"
+AdrenalinePillAmountDesc="Adrenalina que da cada pastilla de adrenalina del mapa (de 1 a 100) [por defecto: 2]"
+InfiniteAdrenalineText="Adrenalina infinita"
+InfiniteAdrenalineDesc="La adrenalina de los jugadores (no la de los bots) siempre está llena: los combos no se terminan solos y, con las armas últimas con adrenalina, disparar no gasta [por defecto: desactivada]"
+FillAdrenalineOnPickupDesc="Al agarrar un arma última que no tenías, la adrenalina se llena. Volver a tocar el punto mientras la tenés no da nada. Solo funciona con las armas últimas con adrenalina [por defecto: activada]"
+Description="El Redeemer, el Ion Painter y la Lightning Gun usan adrenalina en vez de munición: cada disparo cuesta adrenalina (50, 25 y 5 por defecto) y al agarrar una se llena la adrenalina. Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Visión (cuatro veces izquierda), que marca a través de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups útiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Todo se cambia en Configurar mutadores."
+
+[ComboVuelo]
+ExecMessage="¡Vuelo!"
+
+[ComboVision]
+ExecMessage="¡Visión!"
