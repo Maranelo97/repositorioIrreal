@@ -1,7 +1,7 @@
 class MutChatDokaBots extends Mutator;
 
-var string Phrases[47];
-var string CthulhuPhrases[6];
+var string Phrases[50];
+var string CthulhuPhrases[9];
 var string UltimateKillPhrases[6];
 var int LastPhraseIndex;
 var float LastChatTime;
@@ -34,14 +34,17 @@ function float ChatInterval()
 function PostBeginPlay()
 {
     local ChatDokaRules GR;
+    local int i;
 
     Super.PostBeginPlay();
 
-    // Asegura caracteres especiales sin problemas de codificacion
-    Phrases[6] = Chr(191) $ "COMO COJO CARAJO!?";
-    Phrases[36] = "QUIEN ES TU DUE" $ Chr(209) $ "O CARAJO! TE GUSTA COMO TE GARCHO!?!";
-    Phrases[46] = "EL 8 DE OCTUBRE MARCIEL CUMPLE A" $ Chr(209) $ "OS!";
-    CthulhuPhrases[1] = "MIREN EL TAMA" $ Chr(209) $ "O DE ESE CTHULHU, COMO JUEGAN CON MI GUITA!";
+    // Las frases tienen tildes escritas tal cual en este archivo (ver FixAccents)
+    for (i = 0; i < ArrayCount(Phrases); i++)
+        Phrases[i] = FixAccents(Phrases[i]);
+    for (i = 0; i < ArrayCount(CthulhuPhrases); i++)
+        CthulhuPhrases[i] = FixAccents(CthulhuPhrases[i]);
+    for (i = 0; i < ArrayCount(UltimateKillPhrases); i++)
+        UltimateKillPhrases[i] = FixAccents(UltimateKillPhrases[i]);
 
     GR = Spawn(class'ChatDokaRules');
     if (Level.Game != None && GR != None)
@@ -65,6 +68,77 @@ function PostBeginPlay()
     SetTimer(1.0, true);
 }
 
+// Este archivo esta en UTF-8, pero el compilador lo lee byte por byte: una letra con tilde
+// (por ejemplo la A con tilde, bytes C3 81) llega como dos caracteres. Esto los vuelve a unir.
+// Si el compilador ya la leyo bien, no hay nada que arreglar y la frase queda igual.
+static function string FixAccents(string S)
+{
+    local string Out;
+    local int i, Lead, Next;
+
+    for (i = 0; i < Len(S); i++)
+    {
+        Lead = Asc(Mid(S, i, 1));
+        if ((Lead == 194 || Lead == 195) && i + 1 < Len(S))
+        {
+            Next = Utf8ContinuationByte(Asc(Mid(S, i + 1, 1)));
+            if (Next >= 128 && Next < 192)
+            {
+                if (Lead == 195)
+                    Next += 64;
+                Out = Out $ Chr(Next);
+                i++;
+                continue;
+            }
+        }
+        Out = Out $ Mid(S, i, 1);
+    }
+    return Out;
+}
+
+// Segundo byte de la letra con tilde. Si el compilador uso la tabla de Windows (cp1252),
+// algunos bytes llegan como otros caracteres (comillas, etc.): se devuelven al byte original.
+static function int Utf8ContinuationByte(int C)
+{
+    switch (C)
+    {
+        case 8364: return 128;
+        case 8218: return 130;
+        case 402:  return 131;
+        case 8222: return 132;
+        case 8230: return 133;
+        case 8224: return 134;
+        case 8225: return 135;
+        case 710:  return 136;
+        case 8240: return 137;
+        case 352:  return 138;
+        case 8249: return 139;
+        case 338:  return 140;
+        case 381:  return 142;
+        case 8216: return 145;
+        case 8217: return 146;
+        case 8220: return 147;
+        case 8221: return 148;
+        case 8226: return 149;
+        case 8211: return 150;
+        case 8212: return 151;
+        case 732:  return 152;
+        case 8482: return 153;
+        case 353:  return 154;
+        case 8250: return 155;
+        case 339:  return 156;
+        case 382:  return 158;
+        case 376:  return 159;
+    }
+    return C;
+}
+
+// Frase con tildes y el nombre del jugador en lugar de %n (el nombre no pasa por FixAccents)
+function string WithName(string Template, string PlayerName)
+{
+    return Repl(FixAccents(Template), "%n", PlayerName);
+}
+
 function string GetRandomPhrase()
 {
     local int Idx;
@@ -80,24 +154,26 @@ function string GetRandomPhrase()
 
 function string GetHumanDeathMockPhrase(string VictimName)
 {
-    switch (Rand(8))
+    switch (Rand(9))
     {
         case 0:
-            return Chr(161) $ VictimName $ ", HASTA LOS HUEVOS!";
+            return WithName("¡%n, HASTA LOS HUEVOS!", VictimName);
         case 1:
-            return Chr(161) $ "NOOO " $ VictimName $ ", COMO TE VAS A MORIR ASI CARAJO?!";
+            return WithName("¡NOOO %n, CÓMO TE VAS A MORIR ASÍ CARAJO?!", VictimName);
         case 2:
-            return Chr(161) $ "LEVANTATE " $ VictimName $ ", Y ANDA A UNA FABRICA, CARAJO!";
+            return WithName("¡LEVANTATE %n, Y ANDÁ A UNA FÁBRICA, CARAJO!", VictimName);
         case 3:
-            return Chr(161) $ VictimName $ " MURIO! NECESITAMOS MAS BOTS PARA CARREARLO!";
+            return WithName("¡%n MURIÓ! NECESITAMOS MÁS BOTS PARA CARREARLO!", VictimName);
         case 4:
-            return Chr(161) $ "MIRA COMO JUEGAN CON LA VIDA DE " $ VictimName $ "!";
+            return WithName("¡MIRÁ CÓMO JUEGAN CON LA VIDA DE %n!", VictimName);
         case 5:
-            return Chr(161) $ VictimName $ " TENIA INFORMACION QUE PUEDE LLEVAR AL ARRESTO DE CRISTINA KIRCHNER!";
+            return WithName("¡%n TENÍA INFORMACIÓN QUE PUEDE LLEVAR AL ARRESTO DE CRISTINA KIRCHNER!", VictimName);
         case 6:
-            return Chr(161) $ "A " $ VictimName $ " LE METIERON EL TIRO DE MAXIMO A NESTOR!";
+            return WithName("¡A %n LE PEGARON EL TIRO DE MÁXIMO A NÉSTOR!", VictimName);
+        case 7:
+            return WithName("¡CHAU %n, APROBASTE EL CASTING PARA EL CAJÓN!", VictimName);
         default:
-            return Chr(161) $ "CHAU " $ VictimName $ ", APROBASTE EL CASTING PARA EL CAJON!";
+            return WithName("¡%n FUE PIOLADO EN LA SEDE DEL PJ!", VictimName);
     }
 }
 
@@ -214,13 +290,13 @@ function string GetKayrosSnitchPhrase(string TargetName, bool bIsMuchoKayros)
         switch (Rand(4))
         {
             case 0:
-                return Chr(161) $ "MIREN A " $ TargetName $ ", TIENE MUCHO KAYROS ESTA RONDA!";
+                return WithName("¡MIREN A %n, TIENE MUCHO KAYROS ESTA RONDA!", TargetName);
             case 1:
-                return Chr(161) $ TargetName $ " LIGO MUCHO KAYROS, COMO JUEGAN CON MI GUITA!";
+                return WithName("¡%n LIGÓ MUCHO KAYROS, CÓMO JUEGAN CON MI GUITA!", TargetName);
             case 2:
-                return Chr(161) $ "DEJENLE LOS ITEMS A " $ TargetName $ " QUE TIENE MUCHO KAYROS (+20%)!";
+                return WithName("¡DÉJENLE LOS ÍTEMS A %n QUE TIENE MUCHO KAYROS (+20%)!", TargetName);
             default:
-                return Chr(161) $ "QUE ORTO " $ TargetName $ ", TIENE MUCHO KAYROS!";
+                return WithName("¡QUÉ ORTO %n, TIENE MUCHO KAYROS!", TargetName);
         }
     }
     else
@@ -228,13 +304,13 @@ function string GetKayrosSnitchPhrase(string TargetName, bool bIsMuchoKayros)
         switch (Rand(4))
         {
             case 0:
-                return Chr(161) $ "MIREN A " $ TargetName $ ", TIENE MUY POCO KAYROS!";
+                return WithName("¡MIREN A %n, TIENE MUY POCO KAYROS!", TargetName);
             case 1:
-                return Chr(161) $ TargetName $ " TIENE POCO KAYROS, HASTA LOS HUEVOS!";
+                return WithName("¡%n TIENE POCO KAYROS, HASTA LOS HUEVOS!", TargetName);
             case 2:
-                return Chr(161) $ "NO LE DEJEN AGARRAR NADA A " $ TargetName $ " QUE TIENE POCO KAYROS (-20%)!";
+                return WithName("¡NO LE DEJEN AGARRAR NADA A %n QUE TIENE POCO KAYROS (-20%)!", TargetName);
             default:
-                return Chr(161) $ "JAJAJA " $ TargetName $ ", TE TOCO MUY POCO KAYROS ESTA RONDA!";
+                return WithName("¡JAJAJA %n, TE TOCÓ MUY POCO KAYROS ESTA RONDA!", TargetName);
         }
     }
 }
@@ -350,65 +426,71 @@ defaultproperties
     UltimateKillReactionsDesc="Un bot festeja cuando mata con el Redeemer o el Ion Painter [por defecto: activada]"
     PhraseIntervalText="Segundos entre frases al azar"
     PhraseIntervalDesc="Cada cuantos segundos un bot dice una frase al azar; tambien es el tiempo minimo entre las frases de la lista general (de 5 a 300) [por defecto: 30]"
-    Phrases(0)="CUANTO VALE LOS ELAO DE 100?, VALEN 100!!!"
-    Phrases(1)="NO TE PODES EMBARAZAR DE UN TACHERO!"
-    Phrases(2)="NO PODES EMBARAZAR A UNA JUDIA!"
+    Phrases(0)="CUÁNTO VALE LOS ELAO DE 100?, VALEN 100!!!"
+    Phrases(1)="NO TE PODÉS EMBARAZAR DE UN TACHERO!"
+    Phrases(2)="NO PODÉS EMBARAZAR A UNA JUDÍA!"
     Phrases(3)="GANATE LA GARCHA!"
     Phrases(4)="HASTA LOS HUEVOS!"
-    Phrases(5)="QUE HACES MARIANOSKY?, PASAME EL DATASET!"
-    Phrases(6)="COMO COJO CARAJO!?"
+    Phrases(5)="QUÉ HACÉS MARIANOSKY?, PASAME EL DATASET!"
+    Phrases(6)="¿CÓMO COJO CARAJO!?"
     Phrases(7)="LIBEREN A CHADOCA!!!"
     Phrases(8)="AHORA EL TORNEO ES MUY REAL!"
     Phrases(9)="AGUANTE LA COMPETENCIA FALAZ!"
     Phrases(10)="CHADOKA MAGICA IS REAL!"
     Phrases(11)="MUY POCO KAYROS"
-    Phrases(12)="MAMA, LA BOLA DEL QUINI METIO A LOS CHICO EN LA TIMBA!"
+    Phrases(12)="MAMÁ, LA BOLA DEL QUINI METIÓ A LOS CHICO EN LA TIMBA!"
     Phrases(13)="...........OOOOOCHOOOOOOOOOHHH!!!!!!"
-    Phrases(14)="A MI POR 10MIL NO ME VAN A LLEVAR!"
+    Phrases(14)="A MÍ POR 10MIL NO ME VAN A LLEVAR!"
     Phrases(15)="APROBASTE CASTING CONEJITO!, BIENVENIDO A LA EMPRESA!"
     Phrases(16)="HACEME UN OEVEJEROALEMAN!"
-    Phrases(17)="Y ANDA A UNA FABRICA!, CARAJO!"
-    Phrases(18)="NECESITAMOS MAS BOTS!"
+    Phrases(17)="Y ANDÁ A UNA FÁBRICA!, CARAJO!"
+    Phrases(18)="NECESITAMOS MÁS BOTS!"
     Phrases(19)="NO LE DEN ASILO A GRACHU, ES UN PELIGRO!"
-    Phrases(20)="COMO JUEGAN CON MI GUITA!"
+    Phrases(20)="CÓMO JUEGAN CON MI GUITA!"
     Phrases(21)="CHUPALA Y PAJEALA!"
     Phrases(22)="YO SOY JULIO JULIAN!"
     Phrases(23)="COLITA DE CUADRIL VS LOS EXTRATERRESTRES!"
-    Phrases(24)="PROBALAS ESTAN BUENISIMAS!, NO DEJES DE PROBARLAS!"
-    Phrases(25)="ME QUIERO MORIR AMIGO, LE TRANSMITO TODO A MI BEBE!"
-    Phrases(26)="QUE SE SIENTE VIVIR UNA MENTIRA!?"
-    Phrases(27)="COMPRA LA ULTI EN HERNAN DEPORTES!"
+    Phrases(24)="PROBALAS ESTÁN BUENÍSIMAS!, NO DEJES DE PROBARLAS!"
+    Phrases(25)="ME QUIERO MORIR AMIGO, LE TRANSMITO TODO A MI BEBÉ!"
+    Phrases(26)="QUÉ SE SIENTE VIVIR UNA MENTIRA!?"
+    Phrases(27)="COMPRÁ LA ULTI EN HERNÁN DEPORTES!"
     Phrases(28)="CHACO, VO Y TU PERRO DE MIERDA!"
-    Phrases(29)="HAY ARTICULOS DEPORTIVOS, TODO OK!"
-    Phrases(30)="ANGELES ARIANA, HUUUUU QUE VIEJA PUTA!"
-    Phrases(31)="DALE, DAME LA PAPAFRITA Y PAGAME EL VIATICO!"
-    Phrases(32)="PAGUENLE AL PANA RAMON CLEMENTE!!!"
-    Phrases(33)="COMEME BIEN LOS HUEVOS NESTOR!"
+    Phrases(29)="HAY ARTÍCULOS DEPORTIVOS, TODO OK!"
+    Phrases(30)="ÁNGELES ARIANA, HUUUUU QUÉ VIEJA PUTA!"
+    Phrases(31)="DALE, DAME LA PAPAFRITA Y PAGAME EL VIÁTICO!"
+    Phrases(32)="PÁGUENLE AL PANA RAMÓN CLEMENTE!!!"
+    Phrases(33)="COMEME BIEN LOS HUEVOS NÉSTOR!"
     Phrases(34)="TE GUSTA LA VIOLENCIA!?!?"
-    Phrases(35)="NOOOO AMIGO, MURIO UNA BANDA DE GENTE!!"
-    Phrases(36)="QUIEN ES TU DUENO CARAJO! TE GUSTA COMO TE GARCHO!?!"
-    Phrases(37)="GALLETITAS VANINA, ESTAN BUENISIMAS!!"
+    Phrases(35)="NOOOO AMIGO, MURIÓ UNA BANDA DE GENTE!!"
+    Phrases(36)="QUIÉN ES TU DUEÑO CARAJO! TE GUSTA CÓMO TE GARCHO!?!"
+    Phrases(37)="GALLETITAS VANINA, ESTÁN BUENÍSIMAS!!"
     Phrases(38)="GENIALESSSSS!!"
     Phrases(39)="GENUISSSSSS!"
     Phrases(40)="CALDOS KNORR, LO MEJOR PARA EL INVIERNO!"
-    Phrases(41)="LABORATORIOS BAGO, CONCIENCIA AL SERVICIO DE LA SALUD!"
+    Phrases(41)="LABORATORIOS BAGÓ, CONCIENCIA AL SERVICIO DE LA SALUD!"
     Phrases(42)="YO SOY EL LUIS AMSTRONG DE LA CHOTA!"
     Phrases(43)="AHHAHAHAHAHAHAH, EL CTHULHU GARCADO EN FUGACETA!"
     Phrases(44)="BUENO, VAMOS AL TELO!"
     Phrases(45)="MIREN CHICOS, MARCIEL DESNUDO!"
-    Phrases(46)="EL 8 DE OCTUBRE MARCIEL CUMPLE ANOS!"
-    CthulhuPhrases(0)="CORRAN QUE APARECIO EL REY CTHULHU, HASTA LOS HUEVOS!"
-    CthulhuPhrases(1)="MIREN EL TAMANO DE ESE CTHULHU, COMO JUEGAN CON MI GUITA!"
-    CthulhuPhrases(2)="EL REY CTHULHU?! A MI POR 10MIL NO ME VAN A LLEVAR!"
-    CthulhuPhrases(3)="CUIDADO CON EL REY CTHULHU, ESTA HASTA LOS HUEVOS!"
+    Phrases(46)="EL 8 DE OCTUBRE MARCIEL CUMPLE AÑOS!"
+    Phrases(47)="HAY QUE HIDRATARSE PARA EL HYPERBLASTO!"
+    Phrases(48)="JUGAR AL HYPERBLASTO ME CAMBIÓ LA VIDA!"
+    Phrases(49)="MI VIEJA ME DIO LA VIDA, EL HYPERBLASTO LAS GANAS DE VIVIRLA"
+    CthulhuPhrases(0)="CORRAN QUE APARECIÓ EL REY CTHULHU, HASTA LOS HUEVOS!"
+    CthulhuPhrases(1)="MIREN EL TAMAÑO DE ESE CTHULHU, CÓMO JUEGAN CON MI GUITA!"
+    CthulhuPhrases(2)="EL REY CTHULHU?! A MÍ POR 10MIL NO ME VAN A LLEVAR!"
+    CthulhuPhrases(3)="CUIDADO CON EL REY CTHULHU, ESTÁ HASTA LOS HUEVOS!"
     CthulhuPhrases(4)="EL REY CTHULHU VS COLITA DE CUADRIL, HAGAN SUS APUESTAS!"
-    CthulhuPhrases(5)="QUE HACES MARIANOSKY?! NOS SOLTASTE AL REY CTHULHU!"
+    CthulhuPhrases(5)="QUÉ HACÉS MARIANOSKY?! NOS SOLTASTE AL REY CTHULHU!"
+    CthulhuPhrases(6)="EL REY CTHULHU ESTÁ DESNUDO!"
+    CthulhuPhrases(7)="TÚ QUIERE LA PINGA DEL REY CTHULHU EN TU CULO!"
+    CthulhuPhrases(8)="Y EL GRAN RESPONSABLE DE ESTO ES EL REY CTHULHU!"
     UltimateKillPhrases(0)="BOOOM! COMAN REDEEMER, HASTA LOS HUEVOS!"
-    UltimateKillPhrases(1)="PROBALAS ESTAN BUENISIMAS! MIRA COMO EXPLOTO TODO!"
+    UltimateKillPhrases(1)="PROBALAS ESTÁN BUENÍSIMAS! MIRÁ CÓMO EXPLOTÓ TODO!"
     UltimateKillPhrases(2)="RAYO DEL ESPACIO, CHUPALA Y PAJEALA!"
-    UltimateKillPhrases(3)="AHORA EL TORNEO ES MUY REAL! MIRA ESA EXPLOSION!"
+    UltimateKillPhrases(3)="AHORA EL TORNEO ES MUY REAL! MIRÁ ESA EXPLOSIÓN!"
     UltimateKillPhrases(4)="LIBEREN A CHADOCA! VOLARON TODOS EN PEDAZOS!"
-    UltimateKillPhrases(5)="...........OOOOOCHOOOOOOOOOHHH!!!!!! QUE LINDO BOMBAZO!"
+    UltimateKillPhrases(5)="...........OOOOOCHOOOOOOOOOHHH!!!!!! QUÉ LINDO BOMBAZO!"
     LastPhraseIndex=-1
     LastWaveNum=-1
     GroupName="ChatDokaBots"
