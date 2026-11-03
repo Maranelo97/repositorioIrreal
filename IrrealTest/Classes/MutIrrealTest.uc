@@ -82,8 +82,22 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         GiveKayros(Arg, Sender);
     else if (Cmd == "ulti")
         SetUltimateWeapon(Arg, Sender);
+    else if (Cmd == "adrenalina")
+        SetAdrenaline(Arg, Sender);
     else
         ShowHelp(Sender);
+}
+
+// Pone la adrenalina en el valor pedido (100 si no se indica), para probar combos y GIGACHADrenalina
+function SetAdrenaline(string Arg, PlayerController Sender)
+{
+    local int Amount;
+
+    Amount = 100;
+    if (Arg != "")
+        Amount = Clamp(int(Arg), 0, 100);
+    Sender.Adrenaline = Min(Amount, Sender.AdrenalineMax);
+    Sender.ClientMessage("Prueba: adrenalina en " $ int(Sender.Adrenaline) $ ".");
 }
 
 function ShowHelp(PlayerController Sender)
@@ -94,6 +108,7 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal infectado - hace aparecer al Elite Krall infectado");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
+    Sender.ClientMessage("  irreal adrenalina [0-100] - pone tu adrenalina en ese valor (100 si no se indica)");
 }
 
 // Invasion suma 1 a WaveNum al terminar cada oleada, asi que entre oleadas
@@ -336,6 +351,16 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
 
 // Da el arma directamente (o la recarga si ya la tiene). No pasa por Kayros,
 // porque no es una recogida: para probar Kayros hay que levantarla del punto especial.
+function bool IsGigachadrenalinaActive()
+{
+    local MutGigachadrenalina M;
+
+    // Activo y con la opcion de armas ultimas con adrenalina encendida
+    foreach DynamicActors(class'MyInvasionMut.MutGigachadrenalina', M)
+        return M.bAdrenalineUltimates;
+    return false;
+}
+
 function GiveTestWeapon(PlayerController Sender, string WeaponClassName, string WeaponName)
 {
     local class<Weapon> WeaponClass;
@@ -350,6 +375,13 @@ function GiveTestWeapon(PlayerController Sender, string WeaponClassName, string 
     WeaponClass = class<Weapon>(DynamicLoadObject(WeaponClassName, class'Class'));
     if (WeaponClass == None)
         return;
+
+    // Con GIGACHADrenalina activo, dar la version que usa adrenalina (como la del punto especial)
+    if (IsGigachadrenalinaActive() && class'MyInvasionMut.MutGigachadrenalina'.static.GigaWeaponFor(WeaponClass) != None)
+    {
+        WeaponClass = class<Weapon>(class'MyInvasionMut.MutGigachadrenalina'.static.GigaWeaponFor(WeaponClass));
+        WeaponClassName = string(WeaponClass);
+    }
 
     W = Weapon(Sender.Pawn.FindInventoryType(WeaponClass));
     if (W == None)
