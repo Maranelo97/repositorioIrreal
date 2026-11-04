@@ -76,7 +76,9 @@ function Mutate(string MutateString, PlayerController Sender)
 
 function RunCommand(string Cmd, string Arg, PlayerController Sender)
 {
-    if (Cmd == "kill")
+    if (Cmd == "kill" && (Arg == "cthulhu" || Arg == "cutulu"))
+        KillCthulhu(Sender);
+    else if (Cmd == "kill")
         EndWave(Sender);
     else if (Cmd == "cthulhu" || Cmd == "cutulu")
         SpawnCthulhu(Sender);
@@ -106,6 +108,7 @@ function ShowHelp(PlayerController Sender)
 {
     Sender.ClientMessage("Comandos de prueba (irreal ... o mutate test ...):");
     Sender.ClientMessage("  irreal kill - mata a todos los monstruos y termina la oleada");
+    Sender.ClientMessage("  irreal kill cthulhu (o cutulu) - mata solo al Rey Cthulhu");
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
@@ -138,6 +141,34 @@ function Invasion GetWaveInProgress(PlayerController Sender)
         return None;
     }
     return InvGame;
+}
+
+// Mata solo al Rey Cthulhu, como si lo hubiera matado quien escribio el comando (si esta vivo),
+// asi pasan su recompensa y la revivida de un companero igual que en una partida normal
+function KillCthulhu(PlayerController Sender)
+{
+    local Controller C;
+    local Pawn Champion, Killer;
+
+    for (C = Level.ControllerList; C != None; C = C.NextController)
+    {
+        if (Monster(C.Pawn) != None && C.Pawn.Health > 0 && C.Pawn.Tag == 'ChampionMonster')
+        {
+            Champion = C.Pawn;
+            break;
+        }
+    }
+    if (Champion == None)
+    {
+        Sender.ClientMessage("No hay ningun Rey Cthulhu vivo.");
+        return;
+    }
+
+    Killer = Champion;
+    if (Sender.Pawn != None && Sender.Pawn.Health > 0)
+        Killer = Sender.Pawn;
+    Champion.KilledBy(Killer);
+    Sender.ClientMessage("Prueba: Rey Cthulhu eliminado.");
 }
 
 function EndWave(PlayerController Sender)
@@ -374,5 +405,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }
