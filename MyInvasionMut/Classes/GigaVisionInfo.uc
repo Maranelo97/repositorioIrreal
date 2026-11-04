@@ -257,9 +257,13 @@ simulated function Tick(float DeltaTime)
         return;
     }
 
-    // En el host tambien existe la de los demas jugadores: solo dibuja la propia
+    // En el host tambien existe la de los demas jugadores: solo dibuja la propia. A un
+    // cliente solo le llega la suya (bOnlyRelevantToOwner), asi que ahi no se mira Owner: en
+    // los Info no se replica (bSkipActorPropertyReplication) y en el cliente queda en None.
     PC = Level.GetLocalPlayerController();
-    if (PC == None || PC != Owner || PC.myHUD == None)
+    if (PC == None || PC.myHUD == None)
+        return;
+    if (Level.NetMode != NM_Client && PC != Owner)
         return;
 
     if (Overlay != None && !Overlay.bDeleteMe && Overlay.Owner == PC.myHUD)

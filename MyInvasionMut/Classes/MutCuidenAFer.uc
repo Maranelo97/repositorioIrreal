@@ -439,6 +439,9 @@ function ModifyPlayer(Pawn Other)
 
 defaultproperties
 {
+    // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
+    // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
+    bAddToServerPackages=True
     GroupName="CuidenAFer"
     FriendlyName="[Irreal] Cuiden a Fer!"
     Description="Cada oleada de Invasion un jugador al azar (humano o bot) es Fer: no puede disparar ni levantar armas, municion o adrenalina, y todos los monstruos lo persiguen. Si Fer muere, termina la partida. Entre oleadas hay 90 segundos de descanso con +50% de velocidad. Solo compatible con [Irreal] Necesitamos mas BOTS, [Irreal] Chat-doka Bots, [Irreal] Invasion: Armas ultimas, [Irreal] Sigan viendo y Salto cuadruple (QuadJump). Bloquea partidas con otros mutadores."
