@@ -3,14 +3,15 @@
 // reconectar), vuelve a agregarlo.
 class RadarMejoradoReplicationInfo extends ReplicationInfo;
 
-var bool bColoredDots, bShowHeightLines;
+var bool bColoredDots, bShowHeightLines, bShowWave;
+var byte FinalWave;   // Invasion no se la manda a los jugadores; la oleada actual si
 var float MinHeightDiff;
 var RadarMejoradoOverlay Overlay;
 
 replication
 {
     reliable if (Role == ROLE_Authority)
-        bColoredDots, bShowHeightLines, MinHeightDiff;
+        bColoredDots, bShowHeightLines, MinHeightDiff, bShowWave, FinalWave;
 }
 
 simulated function Tick(float DeltaTime)
@@ -52,6 +53,7 @@ defaultproperties
 {
     bColoredDots=True
     bShowHeightLines=True
+    bShowWave=True
     MinHeightDiff=200.0
     bAlwaysRelevant=True
     RemoteRole=ROLE_SimulatedProxy

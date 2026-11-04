@@ -1,28 +1,20 @@
 class MutKayros extends Mutator;
 
+// En cada oleada elige a un jugador humano al azar y le da Mucho Kayros (hace mas dano y
+// recibe menos) o Poco Kayros (hace menos dano y recibe mas). El dano se cambia en
+// KayrosRules.NetDamage, con los porcentajes de las opciones.
+
 var int CurrentWaveNum;
 var PlayerController ChosenPlayer;
 var PlayerController PreviousChosenPlayer;
-var int KayrosState; // 0 = Ninguno, 1 = Mucho Kayros (+20%), 2 = Poco Kayros (-20%)
+var int KayrosState; // 0 = Ninguno, 1 = Mucho Kayros, 2 = Poco Kayros
 
-// Ajustes diferidos al Tick siguiente para UDamagePack y WeaponPickup. Son listas (una entrada
-// por pickup) porque en un mismo frame se pueden levantar varias cosas: con una sola variable,
-// la segunda pisaba a la primera y esa se quedaba sin el +20% o -20%.
-struct PendingUDamageEntry
-{
-    var xPawn P;
-    var float Factor;
-};
-var array<PendingUDamageEntry> PendingUDamage;
+// Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
+var config int DamageDealtPercent;      // cuanto cambia el dano que hace el elegido
+var config int DamageReceivedPercent;   // cuanto cambia el dano que recibe el elegido
 
-struct PendingAmmoEntry
-{
-    var Pawn P;
-    var class<Weapon> WeaponClass;
-    var int OldAmmo;
-    var float Factor;
-};
-var array<PendingAmmoEntry> PendingAmmo;
+var localized string DamageDealtText, DamageDealtDesc;
+var localized string DamageReceivedText, DamageReceivedDesc;
 
 function PostBeginPlay()
 {
@@ -49,158 +41,48 @@ function PostBeginPlay()
     SetTimer(0.5, true);
 }
 
-function float GetFactorForPawn(Pawn Other)
+// Nunca afecta a bots, solo al unico jugador humano elegido en esta oleada (tambien si va en
+// un vehiculo, porque lo controla el mismo jugador)
+function bool IsChosenPawn(Pawn P)
 {
-    if (Other == None || Other.Controller == None || ChosenPlayer == None)
-    {
-        return 1.00;
-    }
-
-    // Nunca afecta a bots, solo al unico jugador humano elegido en esta ronda
-    if (PlayerController(Other.Controller) == ChosenPlayer)
-    {
-        if (KayrosState == 1)
-        {
-            return 1.20;
-        }
-        else if (KayrosState == 2)
-        {
-            return 0.80;
-        }
-    }
-
-    return 1.00;
+    return P != None && ChosenPlayer != None && KayrosState != 0 && P.Controller == ChosenPlayer;
 }
 
-function PreparePickupForPawn(Pawn Other, Pickup item)
+// Mucho Kayros: hace mas dano. Poco Kayros: hace menos
+function float GetDealtFactor()
 {
-    local float Factor;
-    local TournamentHealth TH;
-    local ShieldPickup SP;
-    local AdrenalinePickup AP;
-    local Ammo AM;
-    local WeaponPickup WP;
-    local Weapon ExistingWeap;
-    local int i;
-
-    if (Other == None || item == None)
-    {
-        return;
-    }
-
-    Factor = GetFactorForPawn(Other);
-
-    // 1. Salud (Viales, Botiquines, Super Keg)
-    TH = TournamentHealth(item);
-    if (TH != None)
-    {
-        TH.HealingAmount = Max(1, int(float(TH.Default.HealingAmount) * Factor + 0.5));
-        return;
-    }
-
-    // 2. Escudos (ShieldPack 50, SuperShieldPack 100)
-    SP = ShieldPickup(item);
-    if (SP != None)
-    {
-        SP.ShieldAmount = Max(1, int(float(SP.Default.ShieldAmount) * Factor + 0.5));
-        return;
-    }
-
-    // 3. Pastillas de Adrenalina
-    AP = AdrenalinePickup(item);
-    if (AP != None)
-    {
-        AP.AdrenalineAmount = AP.Default.AdrenalineAmount * Factor;
-        return;
-    }
-
-    // 4. Cajas de municion del piso
-    AM = Ammo(item);
-    if (AM != None)
-    {
-        AM.AmmoAmount = Max(1, int(float(AM.Default.AmmoAmount) * Factor + 0.5));
-        return;
-    }
-
-    // 5. Double Damage (UDamagePack: 36s con Mucho Kayros, 24s con Poco Kayros)
-    if (UDamagePack(item) != None && Factor != 1.00 && xPawn(Other) != None)
-    {
-        i = PendingUDamage.Length;
-        PendingUDamage.Length = i + 1;
-        PendingUDamage[i].P = xPawn(Other);
-        PendingUDamage[i].Factor = Factor;
-        return;
-    }
-
-    // 6. Armas del suelo (modifica en +20% o -20% las balas otorgadas al levantar el arma)
-    // Las armas de GIGACHADrenalina gastan adrenalina en vez de municion: no se tocan
-    WP = WeaponPickup(item);
-    if (WP != None && Factor != 1.00 && class<Weapon>(WP.InventoryType) != None && !IsAdrenalineWeapon(WP.InventoryType))
-    {
-        i = PendingAmmo.Length;
-        PendingAmmo.Length = i + 1;
-        PendingAmmo[i].P = Other;
-        PendingAmmo[i].WeaponClass = class<Weapon>(WP.InventoryType);
-        PendingAmmo[i].Factor = Factor;
-
-        ExistingWeap = Weapon(Other.FindInventoryType(PendingAmmo[i].WeaponClass));
-        if (ExistingWeap != None)
-            PendingAmmo[i].OldAmmo = ExistingWeap.AmmoAmount(0);
-    }
+    if (KayrosState == 1)
+        return 1.0 + Clamp(DamageDealtPercent, 0, 90) / 100.0;
+    if (KayrosState == 2)
+        return 1.0 - Clamp(DamageDealtPercent, 0, 90) / 100.0;
+    return 1.0;
 }
 
-static function bool IsAdrenalineWeapon(class<Inventory> InvClass)
+// Mucho Kayros: recibe menos dano. Poco Kayros: recibe mas
+function float GetReceivedFactor()
 {
-    return ClassIsChildOf(InvClass, class'GigaRedeemer')
-        || ClassIsChildOf(InvClass, class'GigaIonPainter')
-        || ClassIsChildOf(InvClass, class'GigaLightningGun');
+    if (KayrosState == 1)
+        return 1.0 - Clamp(DamageReceivedPercent, 0, 90) / 100.0;
+    if (KayrosState == 2)
+        return 1.0 + Clamp(DamageReceivedPercent, 0, 90) / 100.0;
+    return 1.0;
 }
 
-function Tick(float DeltaTime)
+static function FillPlayInfo(PlayInfo PlayInfo)
 {
-    local Weapon W;
-    local int i, NewAmmo, GainedAmmo, AmmoDelta;
+    Super.FillPlayInfo(PlayInfo);
+    PlayInfo.AddSetting(default.RulesGroup, "DamageDealtPercent", default.DamageDealtText, 0, 1, "Text", "2;0:90");
+    PlayInfo.AddSetting(default.RulesGroup, "DamageReceivedPercent", default.DamageReceivedText, 0, 2, "Text", "2;0:90");
+}
 
-    Super.Tick(DeltaTime);
-
-    // Aplica la duracion modificada del Double Damage (36s o 24s) apenas termina Touch()
-    for (i = 0; i < PendingUDamage.Length; i++)
+static event string GetDescriptionText(string PropName)
+{
+    switch (PropName)
     {
-        if (PendingUDamage[i].P != None && PendingUDamage[i].P.Health > 0 && PendingUDamage[i].P.HasUDamage())
-        {
-            PendingUDamage[i].P.UDamageTime = 0.0;
-            PendingUDamage[i].P.EnableUDamage(30.0 * PendingUDamage[i].Factor);
-        }
+        case "DamageDealtPercent":    return default.DamageDealtDesc;
+        case "DamageReceivedPercent": return default.DamageReceivedDesc;
     }
-    PendingUDamage.Length = 0;
-
-    // Aplica el +20% o -20% de municion al levantar un arma del piso
-    for (i = 0; i < PendingAmmo.Length; i++)
-    {
-        if (PendingAmmo[i].P == None || PendingAmmo[i].P.Health <= 0 || PendingAmmo[i].WeaponClass == None)
-            continue;
-        W = Weapon(PendingAmmo[i].P.FindInventoryType(PendingAmmo[i].WeaponClass));
-        if (W == None)
-            continue;
-        NewAmmo = W.AmmoAmount(0);
-        GainedAmmo = NewAmmo - PendingAmmo[i].OldAmmo;
-        if (GainedAmmo <= 0)
-            continue;
-        if (PendingAmmo[i].Factor > 1.00)
-        {
-            AmmoDelta = Max(1, int(float(GainedAmmo) * (PendingAmmo[i].Factor - 1.00) + 0.5));
-            W.AddAmmo(AmmoDelta, 0);
-        }
-        else if (PendingAmmo[i].Factor < 1.00)
-        {
-            // Sin minimo de 1 y nunca toda la municion recogida: con armas de una
-            // sola carga (Redeemer) la reduccion es 0 y el jugador conserva el arma.
-            AmmoDelta = Min(int(float(GainedAmmo) * (1.00 - PendingAmmo[i].Factor) + 0.5), GainedAmmo - 1);
-            if (AmmoDelta > 0)
-                W.ConsumeAmmo(0, AmmoDelta);
-        }
-    }
-    PendingAmmo.Length = 0;
+    return Super.GetDescriptionText(PropName);
 }
 
 function RollKayrosForWave()
@@ -292,7 +174,7 @@ function RollKayrosForWave()
 
     PreviousChosenPlayer = ChosenPlayer;
 
-    // 50% Mucho Kayros (Buff +20%) / 50% Poco Kayros (Debuff -20%)
+    // 50% Mucho Kayros / 50% Poco Kayros
     if (FRand() < 0.50)
     {
         KayrosState = 1; // TENES MUCHO KAYROS
@@ -354,7 +236,13 @@ defaultproperties
     // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
     bAddToServerPackages=True
     CurrentWaveNum=-1
+    DamageDealtPercent=30
+    DamageReceivedPercent=30
+    DamageDealtText="Cambio del dano que hace"
+    DamageDealtDesc="Cuanto mas dano hace el jugador con Mucho Kayros, y cuanto menos con Poco Kayros, en porcentaje (de 0 a 90) [por defecto: 30]"
+    DamageReceivedText="Cambio del dano que recibe"
+    DamageReceivedDesc="Cuanto menos dano recibe el jugador con Mucho Kayros, y cuanto mas con Poco Kayros, en porcentaje (de 0 a 90) [por defecto: 30]"
     GroupName="KayrosMut"
     FriendlyName="[Irreal] Poco o mucho Kayros?"
-    Description="En cada ronda elige a 1 jugador humano al azar y le otorga Mucho Kayros (+20% en todos los pickups) o Poco Kayros (-20% en todos los pickups)."
+    Description="En cada oleada elige a 1 jugador humano al azar y le da Mucho Kayros (hace 30% mas de dano y recibe 30% menos) o Poco Kayros (hace 30% menos de dano y recibe 30% mas). Los porcentajes se cambian en Configurar mutadores."
 }

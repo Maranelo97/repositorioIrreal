@@ -294,7 +294,7 @@ function string GetKayrosSnitchPhrase(string TargetName, bool bIsMuchoKayros)
             case 1:
                 return WithName("¡%n LIGÓ MUCHO KAYROS, CÓMO JUEGAN CON MI GUITA!", TargetName);
             case 2:
-                return WithName("¡DÉJENLE LOS ÍTEMS A %n QUE TIENE MUCHO KAYROS (+20%)!", TargetName);
+                return WithName("¡CUIDADO CON %n, TIENE MUCHO KAYROS Y PEGA MÁS FUERTE!", TargetName);
             default:
                 return WithName("¡QUÉ ORTO %n, TIENE MUCHO KAYROS!", TargetName);
         }
@@ -308,7 +308,7 @@ function string GetKayrosSnitchPhrase(string TargetName, bool bIsMuchoKayros)
             case 1:
                 return WithName("¡%n TIENE POCO KAYROS, HASTA LOS HUEVOS!", TargetName);
             case 2:
-                return WithName("¡NO LE DEJEN AGARRAR NADA A %n QUE TIENE POCO KAYROS (-20%)!", TargetName);
+                return WithName("¡CUIDEN A %n, QUE TIENE POCO KAYROS Y SE ROMPE CON NADA!", TargetName);
             default:
                 return WithName("¡JAJAJA %n, TE TOCÓ MUY POCO KAYROS ESTA RONDA!", TargetName);
         }
