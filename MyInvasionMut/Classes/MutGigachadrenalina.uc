@@ -9,7 +9,8 @@ var config bool bFillAdrenalineOnPickup;   // llenar la adrenalina al agarrar un
 var config bool bFlightCombo;             // combo Vuelo
 var config bool bVisionCombo;             // combo Vision
 var config bool bCancelCombos;            // cortar el combo activo repitiendo sus teclas
-var config bool bChainCombos;             // con un combo activo, marcar otro cambia a ese
+var config bool bLowAdrenalineCombos;     // combos con menos de 100 de adrenalina (duran menos), y con un
+                                          // combo activo, marcar otro cambia a ese con la que queda
 var config bool bInfiniteAdrenaline;      // la adrenalina de los jugadores siempre esta llena
 var config int ComboDrainPercent;         // que tan rapido gastan adrenalina los combos (100 = normal)
 var config int AdrenalinePillAmount;      // adrenalina que da cada pastilla (2 en el juego)
@@ -22,7 +23,7 @@ var localized string FillAdrenalineOnPickupText, FillAdrenalineOnPickupDesc;
 var localized string FlightComboText, FlightComboDesc;
 var localized string VisionComboText, VisionComboDesc;
 var localized string CancelCombosText, CancelCombosDesc;
-var localized string ChainCombosText, ChainCombosDesc;
+var localized string LowAdrenalineCombosText, LowAdrenalineCombosDesc;
 var localized string InfiniteAdrenalineText, InfiniteAdrenalineDesc;
 var localized string ComboDrainPercentText, ComboDrainPercentDesc;
 var localized string AdrenalinePillAmountText, AdrenalinePillAmountDesc;
@@ -68,7 +69,7 @@ function PostBeginPlay()
     }
     RI = Spawn(class'GigaReplicationInfo');
     if (RI != None)
-        RI.bComboKeys = bCancelCombos || bChainCombos || bFlightCombo;
+        RI.bComboKeys = bCancelCombos || bFlightCombo || bLowAdrenalineCombos;
 }
 
 // Al cambiar de mapa se devuelve el valor original de las pastillas, por si la proxima partida
@@ -118,7 +119,7 @@ function Tick(float DeltaTime)
         if (P != None && P.CurrentCombo != None && !P.CurrentCombo.bDeleteMe)
             AdjustComboDrain(C, P.CurrentCombo, DeltaTime);
 
-        if ((bCancelCombos || bChainCombos) && P != None && P.CurrentCombo != None && ComboIndex(P.CurrentCombo) < 0)
+        if ((bCancelCombos || bLowAdrenalineCombos) && P != None && P.CurrentCombo != None && ComboIndex(P.CurrentCombo) < 0)
         {
             TrackedCombos[TrackedCombos.Length] = P.CurrentCombo;
             TrackedTimes[TrackedTimes.Length] = Level.TimeSeconds;
@@ -231,9 +232,10 @@ function bool AllowedCombo(class<Combo> ComboClass)
 }
 
 // "mutate gigacombo <clase>": lo manda GigaComboInteraction cuando el jugador marca las teclas
-// de un combo mientras tiene uno activo (que no recien empezo). Si es el mismo combo, se corta
-// y la adrenalina que quedaba no se pierde. Si es otro, se cambia a ese y sigue gastando la
-// adrenalina que quedaba.
+// de un combo. Con un combo activo (que no recien empezo): si es el mismo, se corta y la
+// adrenalina que quedaba no se pierde; si es otro, se cambia a ese y sigue gastando la
+// adrenalina que quedaba. Sin combo activo y con menos adrenalina de la que cuesta (el juego
+// solo los inicia con 100), lo inicia con la que hay, asi que dura menos.
 function Mutate(string MutateString, PlayerController Sender)
 {
     local xPawn P;
@@ -265,20 +267,30 @@ function Mutate(string MutateString, PlayerController Sender)
                         HoldAdrenaline(Sender);
                     }
                 }
-                else if (bChainCombos)
+                else if (bLowAdrenalineCombos)
                 {
                     P.CurrentCombo.Destroy();
                     if (P.CurrentCombo == None)
-                    {
-                        if (ComboClass.default.ExecMessage != "")
-                            Sender.ReceiveLocalizedMessage(class'ComboMessage', , , , ComboClass);
-                        P.DoCombo(ComboClass);
-                    }
+                        StartCombo(Sender, P, ComboClass);
                 }
             }
         }
+        else if (P != None && bLowAdrenalineCombos && Sender.bAdrenalineEnabled && Sender.Adrenaline > 0)
+        {
+            ComboClass = class<Combo>(DynamicLoadObject(Mid(MutateString, 10), class'Class', true));
+            if (AllowedCombo(ComboClass) && Sender.Adrenaline < ComboClass.default.AdrenalineCost)
+                StartCombo(Sender, P, ComboClass);
+        }
     }
     Super.Mutate(MutateString, Sender);
+}
+
+// Inicia el combo como lo hace el juego (mensaje y efecto), sin pedir la adrenalina completa
+function StartCombo(PlayerController Sender, xPawn P, class<Combo> ComboClass)
+{
+    if (ComboClass.default.ExecMessage != "")
+        Sender.ReceiveLocalizedMessage(class'ComboMessage', , , , ComboClass);
+    P.DoCombo(ComboClass);
 }
 
 // Version de GIGACHADrenalina de cada arma ultima (None si no es una de ellas)
@@ -348,7 +360,7 @@ static function FillPlayInfo(PlayInfo PlayInfo)
     PlayInfo.AddSetting(default.RulesGroup, "bVisionCombo", default.VisionComboText, 0, 9, "Check");
     PlayInfo.AddSetting(default.RulesGroup, "ComboDrainPercent", default.ComboDrainPercentText, 0, 10, "Text", "3;0:400", , , True);
     PlayInfo.AddSetting(default.RulesGroup, "bCancelCombos", default.CancelCombosText, 0, 11, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bChainCombos", default.ChainCombosText, 0, 12, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bLowAdrenalineCombos", default.LowAdrenalineCombosText, 0, 12, "Check");
 }
 
 static event string GetDescriptionText(string PropName)
@@ -363,7 +375,7 @@ static event string GetDescriptionText(string PropName)
         case "bFlightCombo":     return default.FlightComboDesc;
         case "bVisionCombo":     return default.VisionComboDesc;
         case "bCancelCombos":    return default.CancelCombosDesc;
-        case "bChainCombos":     return default.ChainCombosDesc;
+        case "bLowAdrenalineCombos": return default.LowAdrenalineCombosDesc;
         case "bInfiniteAdrenaline": return default.InfiniteAdrenalineDesc;
         case "ComboDrainPercent": return default.ComboDrainPercentDesc;
         case "AdrenalinePillAmount": return default.AdrenalinePillAmountDesc;
@@ -394,9 +406,9 @@ defaultproperties
     bCancelCombos=True
     CancelCombosText="Cortar el combo repitiendo las teclas"
     CancelCombosDesc="Si repetis las teclas del combo que tenes activo, se corta y te queda la adrenalina que sobraba. Vale para todos los combos [por defecto: activada]"
-    bChainCombos=True
-    ChainCombosText="Encadenar combos"
-    ChainCombosDesc="Con un combo activo, si marcas las teclas de otro combo cambias a ese, con la adrenalina que te quedaba. Vale para todos los combos [por defecto: activada]"
+    bLowAdrenalineCombos=True
+    LowAdrenalineCombosText="Combos con menos de 100 de adrenalina"
+    LowAdrenalineCombosDesc="Se puede hacer un combo con la adrenalina que tengas, aunque no llegue a 100: dura menos, en proporcion (con 50, la mitad). Ademas, con un combo activo, si marcas las teclas de otro combo cambias a ese, con la adrenalina que te quedaba. Vale para todos los combos [por defecto: activada]"
     bInfiniteAdrenaline=False
     ComboDrainPercent=100
     AdrenalinePillAmount=2
@@ -414,5 +426,5 @@ defaultproperties
     LightningGunCostDesc="Adrenalina que cuesta cada disparo de la Lightning Gun (de 0 a 100, 0 = gratis) [por defecto: 5]"
     GroupName="Gigachadrenalina"
     FriendlyName="[Irreal] GIGACHADrenalina"
-    Description="El Redeemer, el Ion Painter y la Lightning Gun usan adrenalina en vez de municion: cada disparo cuesta adrenalina (50, 25 y 5 por defecto) y al agarrar una se llena la adrenalina. Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Todo se cambia en Configurar mutadores."
+    Description="El Redeemer, el Ion Painter y la Lightning Gun usan adrenalina en vez de municion: cada disparo cuesta adrenalina (50, 25 y 5 por defecto) y al agarrar una se llena la adrenalina. Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores."
 }
