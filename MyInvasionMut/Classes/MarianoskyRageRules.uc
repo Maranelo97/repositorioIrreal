@@ -43,6 +43,11 @@ function Controller ReviveOneFallenTeammate()
         Target.PlayerReplicationInfo.NumLives = 0;
         if (PlayerController(Target) != None)
         {
+            // Un jugador sin vidas queda como espectador, y ahi ServerReStartPlayer no hace nada:
+            // como hace Invasion al revivir entre oleadas, primero vuelve a "esperando para jugar".
+            // WaitDelay bloquea el reinicio hasta 2 s despues de morir; se libera por si murio recien.
+            PlayerController(Target).GotoState('PlayerWaiting');
+            PlayerController(Target).WaitDelay = Level.TimeSeconds;
             PlayerController(Target).SetViewTarget(Target);
         }
         Target.ServerReStartPlayer();
