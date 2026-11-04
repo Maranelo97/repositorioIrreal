@@ -9,7 +9,16 @@ var localized string CountdownText, CountdownDesc;
 
 var bool bWaitingForAdmin;
 var bool bWaveWasActive;
-var bool bHappyHourSpeedActive;
+
+// Jugadores con la velocidad extra de la pausa: lo que tenian antes (se devuelve al terminar)
+// y la velocidad que les puso la pausa, para saber si despues otra cosa la cambio
+struct BoostEntry
+{
+    var Pawn P;
+    var float GroundSpeed, AirSpeed, WaterSpeed, AccelRate;
+    var float BoostedGroundSpeed;
+};
+var array<BoostEntry> Boosted;
 
 function PostBeginPlay()
 {
@@ -69,34 +78,98 @@ function SendNextWaveHint(int Switch)
     }
 }
 
-function ApplyPauseSpeedBoost(bool bEnableBoost)
+// Hay algun host o admin que pueda terminar la pausa con 'mutate nextwave'?
+function bool HasAuthorizedPlayer()
+{
+    local Controller C;
+
+    for (C = Level.ControllerList; C != None; C = C.NextController)
+        if (IsHostOrAdmin(PlayerController(C)))
+            return true;
+    return false;
+}
+
+function int BoostIndex(Pawn P)
+{
+    local int i;
+
+    for (i = 0; i < Boosted.Length; i++)
+        if (Boosted[i].P == P)
+            return i;
+    return -1;
+}
+
+// Pone la velocidad extra a cada jugador vivo que todavia no la tiene, multiplicando su
+// velocidad actual (asi se respeta lo que hayan cambiado otros mutadores o combos). Se llama
+// en cada segundo de la pausa, pero solo escribe cuando hace falta: a quien acaba de
+// aparecer o a quien otra cosa le cambio la velocidad (por ejemplo, al terminar un combo).
+function UpdatePauseSpeed()
 {
     local Controller C;
     local Pawn P;
     local float Multiplier;
+    local int i;
 
-    if (bEnableBoost)
-    {
-        Multiplier = 1.0 + float(Clamp(SpeedBonus, 0, 200)) / 100.0;
-    }
-    else
-    {
-        Multiplier = 1.00;
-    }
+    Multiplier = 1.0 + float(Clamp(SpeedBonus, 0, 200)) / 100.0;
+    if (Multiplier == 1.0)
+        return;
 
     for (C = Level.ControllerList; C != None; C = C.NextController)
     {
-        if (C.bIsPlayer && C.Pawn != None && C.Pawn.Health > 0 && Monster(C.Pawn) == None)
+        if (!C.bIsPlayer || C.Pawn == None || C.Pawn.Health <= 0 || Monster(C.Pawn) != None)
+            continue;
+        P = C.Pawn;
+        i = BoostIndex(P);
+        if (i >= 0 && P.GroundSpeed == Boosted[i].BoostedGroundSpeed)
+            continue;
+        if (i < 0)
         {
-            P = C.Pawn;
-            P.GroundSpeed = P.Default.GroundSpeed * Multiplier;
-            P.AirSpeed = P.Default.AirSpeed * Multiplier;
-            P.WaterSpeed = P.Default.WaterSpeed * Multiplier;
-            P.AccelRate = P.Default.AccelRate * Multiplier;
+            i = Boosted.Length;
+            Boosted.Length = i + 1;
+            Boosted[i].P = P;
         }
+        Boosted[i].GroundSpeed = P.GroundSpeed;
+        Boosted[i].AirSpeed = P.AirSpeed;
+        Boosted[i].WaterSpeed = P.WaterSpeed;
+        Boosted[i].AccelRate = P.AccelRate;
+        P.GroundSpeed *= Multiplier;
+        P.AirSpeed *= Multiplier;
+        P.WaterSpeed *= Multiplier;
+        P.AccelRate *= Multiplier;
+        Boosted[i].BoostedGroundSpeed = P.GroundSpeed;
     }
+}
 
-    bHappyHourSpeedActive = bEnableBoost;
+// Devuelve la velocidad que cada jugador tenia antes de la pausa. Si otra cosa la cambio
+// durante la pausa, se deja como esta.
+function RemovePauseSpeed()
+{
+    local Pawn P;
+    local int i;
+
+    for (i = 0; i < Boosted.Length; i++)
+    {
+        P = Boosted[i].P;
+        if (P == None || P.bDeleteMe || P.GroundSpeed != Boosted[i].BoostedGroundSpeed)
+            continue;
+        P.GroundSpeed = Boosted[i].GroundSpeed;
+        P.AirSpeed = Boosted[i].AirSpeed;
+        P.WaterSpeed = Boosted[i].WaterSpeed;
+        P.AccelRate = Boosted[i].AccelRate;
+    }
+    Boosted.Length = 0;
+}
+
+// Termina la pausa y arranca la cuenta regresiva de la oleada siguiente
+function EndPause(Invasion InvGame)
+{
+    bWaitingForAdmin = false;
+    bWaveWasActive = false;
+    RemovePauseSpeed();
+    SendNextWaveHint(1);
+    // Inicia la cuenta regresiva (5 segundos por defecto). Invasion empieza la oleada cuando
+    // WaveCountDown llega a 1 o menos, asi que con 0 empieza en el siguiente segundo.
+    InvGame.WaveCountDown = Clamp(Countdown, 0, 30) + 1;
 }
 
 function Mutate(string MutateString, PlayerController Sender)
@@ -112,13 +185,7 @@ function Mutate(string MutateString, PlayerController Sender)
             InvGame = Invasion(Level.Game);
             if (InvGame != None && bWaitingForAdmin)
             {
-                bWaitingForAdmin = false;
-                bWaveWasActive = false;
-                ApplyPauseSpeedBoost(false);
-                SendNextWaveHint(1);
-                // Inicia la cuenta regresiva (5 segundos por defecto). Invasion empieza la oleada cuando
-                // WaveCountDown llega a 1 o menos, asi que con 0 empieza en el siguiente segundo.
-                InvGame.WaveCountDown = Clamp(Countdown, 0, 30) + 1;
+                EndPause(InvGame);
                 if (Clamp(SpeedBonus, 0, 200) > 0)
                     NotifyHostOrAdmin("Siguiente oleada iniciada! Velocidad normal restaurada.");
                 else
@@ -148,9 +215,9 @@ function Timer()
                 SendNextWaveHint(1);
             }
             bWaitingForAdmin = false;
-            if (bHappyHourSpeedActive)
+            if (Boosted.Length > 0)
             {
-                ApplyPauseSpeedBoost(false);
+                RemovePauseSpeed();
             }
         }
         // Cuando la oleada termina (bWaveInProgress pasa a false y no quedan monstruos):
@@ -167,7 +234,7 @@ function Timer()
                 bWaveWasActive = false;
                 bWaitingForAdmin = true;
                 InvGame.WaveCountDown = 9999; // Congela el temporizador de la siguiente ronda
-                ApplyPauseSpeedBoost(true);
+                UpdatePauseSpeed();
                 if (Clamp(SpeedBonus, 0, 200) > 0)
                     NotifyHostOrAdmin("Oleada limpiada! Velocidad +" $ Clamp(SpeedBonus, 0, 200) $ "%");
                 else
@@ -179,11 +246,18 @@ function Timer()
         // Mantiene la pausa y la velocidad extra mientras se espera la confirmacion
         if (bWaitingForAdmin)
         {
+            // Si ya no queda ningun host ni admin, nadie podria terminarla: sigue sola
+            if (!HasAuthorizedPlayer())
+            {
+                EndPause(InvGame);
+                Level.Game.Broadcast(self, "No hay host ni admin: la siguiente oleada empieza sola.");
+                return;
+            }
             if (InvGame.WaveCountDown < 9000)
             {
                 InvGame.WaveCountDown = 9999;
             }
-            ApplyPauseSpeedBoost(true);
+            UpdatePauseSpeed();
         }
     }
 }

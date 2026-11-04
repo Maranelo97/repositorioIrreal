@@ -16,8 +16,12 @@ function Timer()
 {
     local PlayerController PC;
 
-    if (bInteractionAdded)
+    // En un servidor dedicado no hay jugador local: ahi solo sirve "mutate test ..."
+    if (bInteractionAdded || Level.NetMode == NM_DedicatedServer)
+    {
+        SetTimer(0.0, false);
         return;
+    }
 
     PC = Level.GetLocalPlayerController();
     if (PC != None && PC.Player != None && PC.Player.InteractionMaster != None)
@@ -76,8 +80,6 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         EndWave(Sender);
     else if (Cmd == "cthulhu" || Cmd == "cutulu")
         SpawnCthulhu(Sender);
-    else if (Cmd == "infectado")
-        SpawnKrall(Sender);
     else if (Cmd == "kayros")
         GiveKayros(Arg, Sender);
     else if (Cmd == "ulti")
@@ -105,7 +107,6 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("Comandos de prueba (irreal ... o mutate test ...):");
     Sender.ClientMessage("  irreal kill - mata a todos los monstruos y termina la oleada");
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
-    Sender.ClientMessage("  irreal infectado - hace aparecer al Elite Krall infectado");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
     Sender.ClientMessage("  irreal adrenalina [0-100] - pone tu adrenalina en ese valor (100 si no se indica)");
@@ -218,34 +219,6 @@ function SpawnCthulhu(PlayerController Sender)
     RageMut.bChampionSpawnedThisWave = true;
     RageMut.PromoteToChampion(Boss);
     Sender.ClientMessage("Prueba: Rey Cthulhu creado.");
-}
-
-function SpawnKrall(PlayerController Sender)
-{
-    local Invasion InvGame;
-    local MutLeTransmitoTodoAMiBB InfectMut;
-
-    InvGame = GetWaveInProgress(Sender);
-    if (InvGame == None)
-        return;
-
-    foreach DynamicActors(class'MutLeTransmitoTodoAMiBB', InfectMut)
-        break;
-    if (InfectMut == None)
-    {
-        Sender.ClientMessage("Le transmito todo a mi BB no esta activo.");
-        return;
-    }
-
-    if (InfectMut.SpawnEliteKrall(InvGame) == None)
-    {
-        Sender.ClientMessage("No se encontro un lugar para hacer aparecer al Elite Krall.");
-        return;
-    }
-
-    Sender.ClientMessage("Prueba: Elite Krall infectado creado.");
-    if (InvGame.WaveNum < 8)
-        Sender.ClientMessage("Ojo: el contagio solo funciona desde la oleada 9.");
 }
 
 function GiveKayros(string Arg, PlayerController Sender)
@@ -401,5 +374,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), infectado, kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
+    Description="Comandos de prueba para el host: irreal kill, cthulhu (o cutulu), kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos."
 }
