@@ -77,7 +77,7 @@ function GiveBossReward(Controller C)
     for (Inv = C.Pawn.Inventory; Inv != None; Inv = Inv.Inventory)
     {
         W = Weapon(Inv);
-        if (W != None && !class'MutKayros'.static.IsAdrenalineWeapon(W.Class))
+        if (W != None && !class'MutGigachadrenalina'.static.IsAdrenalineWeapon(W.Class))
             W.MaxOutAmmo();
     }
 

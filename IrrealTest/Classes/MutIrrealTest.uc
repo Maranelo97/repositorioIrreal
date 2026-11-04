@@ -353,8 +353,6 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     GiveTestWeapon(Sender, WeaponClassName, WeaponName);
 }
 
-// Da el arma directamente (o la recarga si ya la tiene). No pasa por Kayros,
-// porque no es una recogida: para probar Kayros hay que levantarla del punto especial.
 function bool IsGigachadrenalinaActive()
 {
     local MutGigachadrenalina M;

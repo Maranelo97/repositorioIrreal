@@ -54,12 +54,12 @@ static function RenderComplexMessage(
 
     if (Switch == 1)
     {
-        // Mucho Kayros (Buff +20%): Verde esmeralda / dorado brillante
+        // Mucho Kayros: Verde esmeralda / dorado brillante
         C.SetDrawColor(60, 255, 90, CurrentAlpha);
     }
     else
     {
-        // Poco Kayros (Debuff -20%): Violeta / purpura intenso
+        // Poco Kayros: Violeta / purpura intenso
         C.SetDrawColor(215, 75, 255, CurrentAlpha);
     }
 

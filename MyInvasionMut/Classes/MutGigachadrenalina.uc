@@ -383,6 +383,14 @@ static event string GetDescriptionText(string PropName)
     return Super.GetDescriptionText(PropName);
 }
 
+// Las armas de este mutador gastan adrenalina en vez de municion
+static function bool IsAdrenalineWeapon(class<Inventory> InvClass)
+{
+    return ClassIsChildOf(InvClass, class'GigaRedeemer')
+        || ClassIsChildOf(InvClass, class'GigaIonPainter')
+        || ClassIsChildOf(InvClass, class'GigaLightningGun');
+}
+
 defaultproperties
 {
     // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
