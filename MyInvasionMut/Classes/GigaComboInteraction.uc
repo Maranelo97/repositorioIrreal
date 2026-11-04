@@ -209,7 +209,8 @@ function AddKey(int DiffKey, xPlayer PC)
 // Las interacciones sobreviven al cambio de mapa: se quita sola para no duplicarse
 event NotifyLevelChange()
 {
-    Master.RemoveInteraction(self);
+    if (Master != None)
+        Master.RemoveInteraction(self);
 }
 
 defaultproperties

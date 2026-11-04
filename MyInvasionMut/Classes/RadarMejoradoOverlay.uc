@@ -3,8 +3,9 @@
 //   (verde). Los bots no se tapan: quedan con el punto tenue del radar del juego, asi no
 //   llenan el radar;
 // - una linea vertical en cada monstruo y cada jugador que esta en otro piso;
-// - el Rey Cthulhu (Marianosky's rage) como un circulo rojo mas grande, y Fer (Cuiden a
-//   Fer!) en magenta aunque sea un bot, cada uno con su linea del mismo color.
+// - el Rey Cthulhu (Marianosky's rage) como un circulo rojo mas grande, con su linea del
+//   mismo color.
+// Lo que queda fuera del circulo del radar no se dibuja.
 // La ubicacion de cada punto sale de InvasionRadarMath, asi todo queda pegado a los puntos
 // del radar aunque cambie de lugar o tamano.
 class RadarMejoradoOverlay extends HudOverlay;
@@ -13,10 +14,8 @@ var RadarMejoradoReplicationInfo Settings;  // configuracion del servidor
 var color MonsterColor, HumanColor;
 var color OtherColor;       // pawns sin jugador (por ejemplo vehiculos vacios)
 var color ChampionColor;    // punto y linea del Rey Cthulhu
-var color FerColor;         // punto y linea de Fer
 var float DotRadiusScale;   // radio del punto fijo respecto del tamano del punto del radar
 var float ChampionRadiusScale;  // radio del punto del Rey Cthulhu (mas grande que el resto)
-var float FerRadiusScale;   // radio del punto de Fer
 var float FullLengthExtra;  // diferencia extra (sobre MinHeightDiff) para el largo maximo de la linea
 var float GroundTraceDist;  // hasta donde se busca el piso debajo de un pawn en el aire
 
@@ -93,15 +92,14 @@ simulated function DrawHeightLine(Canvas C, Pawn P, float X, float Y, float Feet
 simulated function Render(Canvas C)
 {
     local HUDInvasion H;
-    local Pawn P, Champion, Fer;
+    local Pawn P, Champion;
     local CthulhuBossVisual BossVisual;
-    local FerBRVisual FerVisual;
     local vector Start;
     local int ViewYaw;
     local float Dist, DotSize, DotRadius, X, Y, StemW, FeetZ;
     local float CircleX, CircleY, CircleR;
-    local float ChampionX, ChampionY, FerX, FerY;
-    local bool bChampionOnRadar, bFerOnRadar, bSpecial;
+    local float ChampionX, ChampionY;
+    local bool bChampionOnRadar, bSpecial;
 
     H = HUDInvasion(Owner);
     if (Settings == None || !class'InvasionRadarMath'.static.RadarDrawnThisFrame(H))
@@ -119,9 +117,8 @@ simulated function Render(Canvas C)
     class'InvasionRadarMath'.static.GetRadarCircle(H, C, CircleX, CircleY, CircleR);
     C.Style = ERenderStyle.STY_Alpha;
 
-    // El Rey Cthulhu y Fer se reconocen por actores que llegan a todos los clientes:
-    // CthulhuBossVisual (el Tag 'ChampionMonster' solo existe en el servidor) y la marca que
-    // Cuiden a Fer! pega en la espalda de Fer. Solo se resaltan con los puntos de colores.
+    // El Rey Cthulhu se reconoce por CthulhuBossVisual, que llega a todos los clientes (el
+    // Tag 'ChampionMonster' solo existe en el servidor). Solo se resalta con los puntos de colores.
     if (Settings.bColoredDots)
     {
         foreach DynamicActors(class'CthulhuBossVisual', BossVisual)
@@ -129,20 +126,18 @@ simulated function Render(Canvas C)
             Champion = BossVisual.BossOwner;
             break;
         }
-        foreach DynamicActors(class'FerBRVisual', FerVisual)
-        {
-            Fer = Pawn(FerVisual.Base);
-            break;
-        }
     }
 
     foreach DynamicActors(class'Pawn', P)
     {
-        // Los bots quedan tenues, salvo que sean Fer
-        if (P.Health <= 0 || (IsBot(P) && P != Fer))
+        // Los bots quedan tenues
+        if (P.Health <= 0 || IsBot(P))
             continue;
 
         if (!class'InvasionRadarMath'.static.GetDotPosition(H, C, Start, ViewYaw, P.Location, X, Y, Dist))
+            continue;
+        // Fuera del circulo del radar no se dibuja nada (la linea de altura ya se recorta igual)
+        if ((X - CircleX) * (X - CircleX) + (Y - CircleY) * (Y - CircleY) >= CircleR * CircleR)
             continue;
 
         // Los puntos resaltados se dibujan al final, asi quedan encima de los demas
@@ -153,13 +148,6 @@ simulated function Render(Canvas C)
             ChampionX = X;
             ChampionY = Y;
             bChampionOnRadar = true;
-        }
-        else if (P == Fer)
-        {
-            C.DrawColor = FerColor;
-            FerX = X;
-            FerY = Y;
-            bFerOnRadar = true;
         }
         else
         {
@@ -178,11 +166,6 @@ simulated function Render(Canvas C)
         DrawHeightLine(C, P, X, Y, FeetZ, DotSize, DotRadius, StemW, Settings.MinHeightDiff, CircleX, CircleY, CircleR);
     }
 
-    if (bFerOnRadar)
-    {
-        C.DrawColor = FerColor;
-        class'InvasionRadarMath'.static.DrawDisc(C, FerX, FerY, DotSize * FerRadiusScale);
-    }
     if (bChampionOnRadar)
     {
         C.DrawColor = ChampionColor;
@@ -196,10 +179,8 @@ defaultproperties
     HumanColor=(R=40,G=255,B=40,A=255)
     OtherColor=(R=60,G=130,B=255,A=255)
     ChampionColor=(R=255,G=20,B=0,A=255)
-    FerColor=(R=255,G=0,B=255,A=255)
     DotRadiusScale=0.33
     ChampionRadiusScale=0.48
-    FerRadiusScale=0.42
     FullLengthExtra=900.0
     GroundTraceDist=3000.0
     bHidden=True
