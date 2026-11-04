@@ -1,0 +1,68 @@
+name: Publicar actualizacion UT2004
+
+on:
+  push:
+    branches: [production, Production]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ut2004-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/production' || github.ref == 'refs/heads/Production'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+          persist-credentials: false
+
+      - name: Probar empaquetado y actualizador en Windows PowerShell
+        run: |
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File automation/tests/Test-Update.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Fallaron las pruebas del actualizador.' }
+
+      - name: Preparar paquete de archivos compilados
+        run: |
+          $version = "ut2004-$env:GITHUB_RUN_NUMBER-$env:GITHUB_RUN_ATTEMPT"
+          ./automation/Build-Update.ps1 -Version $version -Commit $env:GITHUB_SHA -OutputPath build/release
+          "UT_UPDATE_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Publicar solamente despues de subir todos los archivos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          UT_UPDATE_BRANCH: ${{ github.ref_name }}
+        run: |
+          $head = gh api "repos/$env:GH_REPO/git/ref/heads/$env:UT_UPDATE_BRANCH" --jq '.object.sha'
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo consultar production.' }
+          if ($head.Trim() -ne $env:GITHUB_SHA) {
+            Write-Host 'Hay un push mas nuevo; su ejecucion publicara la actualizacion.'
+            exit 0
+          }
+          @(
+            "Actualizacion de UT2004: $env:UT_UPDATE_VERSION",
+            "Commit: $env:GITHUB_SHA",
+            '',
+            'Instalacion inicial: descargar UT2004-updater.zip y leer LEEME.md.',
+            'Las PCs configuradas descargan esta version cuando su adaptador Radmin esta activo.',
+            'El juego debe estar cerrado para aplicar los archivos.'
+          ) | Set-Content build/release/notes.md -Encoding utf8
+          gh release create $env:UT_UPDATE_VERSION `
+            build/release/UT2004-update.zip `
+            build/release/UT2004-manifest.json `
+            build/release/UT2004-updater.zip `
+            --target $env:GITHUB_SHA --title "UT2004 $env:UT_UPDATE_VERSION" `
+            --notes-file build/release/notes.md --draft
+          if ($LASTEXITCODE -ne 0) { throw 'Fallo la subida; la release no se publica.' }
+          gh release edit $env:UT_UPDATE_VERSION --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo publicar la release.' }

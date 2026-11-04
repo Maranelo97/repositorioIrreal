@@ -1,0 +1,4 @@
+/build/
+/automation/client/config.json
+/automation/client/*.clixml
+/automation/client/*.log

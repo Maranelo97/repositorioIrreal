@@ -1,5 +1,7 @@
 # Mutadores Ver 1.1
 
+Automatización de actualizaciones al activar Radmin: ver [automation/README.md](automation/README.md). Incluye publicación desde `production`/`Production` y un actualizador para las PCs de los amigos.
+
 Documento de estado del paquete `MyInvasionMut` para Unreal Tournament 2004.
 
 La lista y las descripciones se basan en las fuentes actuales del paquete y en las pruebas LAN realizadas hasta el 1 de noviembre de 2026. Las clases auxiliares de reglas, mensajes, efectos visuales, daño y pickups no se cuentan como mutadores separados.
