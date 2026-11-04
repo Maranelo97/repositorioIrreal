@@ -30,8 +30,8 @@ Comprobado en el juego: con `FontEurostile37`, "TENÉS POCO KAYROS" se veía "TE
 
 Por eso:
 
-- **Mensajes grandes del centro de la pantalla** (Rey Cthulhu, Kayros, Fer): usan `FontEurostile29`. No volver a `FontEurostile37` si los mensajes llevan acentos.
-- **Nombres y descripciones del menú:** el menú no usa esas cuatro fuentes; en el juego se vieron bien las minúsculas con acento y `¿`. `¡` y las mayúsculas `Á Í Ó Ú` no se probaron todavía en el menú (por eso el mutador sigue llamándose "Cuiden a Fer!" sin `¡`).
+- **Mensajes grandes del centro de la pantalla** (Rey Cthulhu, Kayros): usan `FontEurostile29`. No volver a `FontEurostile37` si los mensajes llevan acentos.
+- **Nombres y descripciones del menú:** el menú no usa esas cuatro fuentes; en el juego se vieron bien las minúsculas con acento y `¿`. `¡` y las mayúsculas `Á Í Ó Ú` no se probaron todavía en el menú.
 - **Chat de los bots:** `¡`, `¿` y `Ñ` se ven bien (comprobado en el juego).
 - Antes de usar otra fuente con acentos, probarla en el juego: que tenga una imagen para cada letra no garantiza que sea la letra correcta.
 

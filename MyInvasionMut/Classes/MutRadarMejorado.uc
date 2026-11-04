@@ -61,12 +61,12 @@ defaultproperties
     bShowHeightLines=True
     MinHeightDiff=200.0
     ColoredDotsText="Puntos de colores"
-    ColoredDotsDesc="Puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; los bots quedan tenues, el Rey Cthulhu aparece en rojo y Fer en magenta. Si se desactiva, se ven los puntos normales del radar [por defecto: activada]"
+    ColoredDotsDesc="Puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; los bots quedan tenues y el Rey Cthulhu aparece en rojo. Si se desactiva, se ven los puntos normales del radar [por defecto: activada]"
     ShowHeightLinesText="Lineas de altura"
     ShowHeightLinesDesc="Muestra una linea vertical en cada monstruo o jugador que esta en otro piso [por defecto: activada]"
     MinHeightDiffText="Diferencia minima de altura"
     MinHeightDiffDesc="Diferencia de altura (en unidades, pies contra pies) a partir de la cual se dibuja la linea. Un piso suele estar a entre 200 y 500 unidades. Mas bajo: mas sensible (de 50 a 2000) [por defecto: 200]"
     GroupName="RadarMejorado"
     FriendlyName="[Irreal] Sigan viendo"
-    Description="Reemplaza los puntos del radar de Invasion por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo mas grande y Fer (en Cuiden a Fer!) en magenta. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Ademas, cada monstruo o jugador que esta en otro piso muestra una linea vertical: si esta arriba, el punto queda sobre la linea; si esta abajo, el punto cuelga de la linea. Cuanto mas larga la linea, mas diferencia de altura. Cada parte se puede desactivar en Configurar mutadores."
+    Description="Reemplaza los puntos del radar de Invasion por puntos fijos, sin parpadeo: amarillo para monstruos y verde para jugadores; el Rey Cthulhu aparece como un punto rojo mas grande. Los bots quedan con el punto tenue del radar original, para no llenar el radar. Ademas, cada monstruo o jugador que esta en otro piso muestra una linea vertical: si esta arriba, el punto queda sobre la linea; si esta abajo, el punto cuelga de la linea. Cuanto mas larga la linea, mas diferencia de altura. Cada parte se puede desactivar en Configurar mutadores."
 }

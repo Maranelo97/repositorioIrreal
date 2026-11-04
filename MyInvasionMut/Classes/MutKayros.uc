@@ -5,16 +5,24 @@ var PlayerController ChosenPlayer;
 var PlayerController PreviousChosenPlayer;
 var int KayrosState; // 0 = Ninguno, 1 = Mucho Kayros (+20%), 2 = Poco Kayros (-20%)
 
-// Ajustes diferidos al mismo frame/tick para UDamagePack y WeaponPickup
-var bool bPendingUDamage;
-var xPawn PendingUDamagePawn;
-var float PendingUDamageFactor;
+// Ajustes diferidos al Tick siguiente para UDamagePack y WeaponPickup. Son listas (una entrada
+// por pickup) porque en un mismo frame se pueden levantar varias cosas: con una sola variable,
+// la segunda pisaba a la primera y esa se quedaba sin el +20% o -20%.
+struct PendingUDamageEntry
+{
+    var xPawn P;
+    var float Factor;
+};
+var array<PendingUDamageEntry> PendingUDamage;
 
-var bool bPendingWeaponAmmo;
-var Pawn PendingWeaponPawn;
-var class<Weapon> PendingWeaponClass;
-var int PendingWeaponOldAmmo;
-var float PendingWeaponFactor;
+struct PendingAmmoEntry
+{
+    var Pawn P;
+    var class<Weapon> WeaponClass;
+    var int OldAmmo;
+    var float Factor;
+};
+var array<PendingAmmoEntry> PendingAmmo;
 
 function PostBeginPlay()
 {
@@ -73,6 +81,7 @@ function PreparePickupForPawn(Pawn Other, Pickup item)
     local Ammo AM;
     local WeaponPickup WP;
     local Weapon ExistingWeap;
+    local int i;
 
     if (Other == None || item == None)
     {
@@ -116,86 +125,82 @@ function PreparePickupForPawn(Pawn Other, Pickup item)
     // 5. Double Damage (UDamagePack: 36s con Mucho Kayros, 24s con Poco Kayros)
     if (UDamagePack(item) != None && Factor != 1.00 && xPawn(Other) != None)
     {
-        bPendingUDamage = true;
-        PendingUDamagePawn = xPawn(Other);
-        PendingUDamageFactor = Factor;
+        i = PendingUDamage.Length;
+        PendingUDamage.Length = i + 1;
+        PendingUDamage[i].P = xPawn(Other);
+        PendingUDamage[i].Factor = Factor;
         return;
     }
 
     // 6. Armas del suelo (modifica en +20% o -20% las balas otorgadas al levantar el arma)
+    // Las armas de GIGACHADrenalina gastan adrenalina en vez de municion: no se tocan
     WP = WeaponPickup(item);
-    if (WP != None && Factor != 1.00 && class<Weapon>(WP.InventoryType) != None)
+    if (WP != None && Factor != 1.00 && class<Weapon>(WP.InventoryType) != None && !IsAdrenalineWeapon(WP.InventoryType))
     {
-        bPendingWeaponAmmo = true;
-        PendingWeaponPawn = Other;
-        PendingWeaponClass = class<Weapon>(WP.InventoryType);
-        PendingWeaponFactor = Factor;
+        i = PendingAmmo.Length;
+        PendingAmmo.Length = i + 1;
+        PendingAmmo[i].P = Other;
+        PendingAmmo[i].WeaponClass = class<Weapon>(WP.InventoryType);
+        PendingAmmo[i].Factor = Factor;
 
-        ExistingWeap = Weapon(Other.FindInventoryType(PendingWeaponClass));
+        ExistingWeap = Weapon(Other.FindInventoryType(PendingAmmo[i].WeaponClass));
         if (ExistingWeap != None)
-        {
-            PendingWeaponOldAmmo = ExistingWeap.AmmoAmount(0);
-        }
-        else
-        {
-            PendingWeaponOldAmmo = 0;
-        }
+            PendingAmmo[i].OldAmmo = ExistingWeap.AmmoAmount(0);
     }
+}
+
+static function bool IsAdrenalineWeapon(class<Inventory> InvClass)
+{
+    return ClassIsChildOf(InvClass, class'GigaRedeemer')
+        || ClassIsChildOf(InvClass, class'GigaIonPainter')
+        || ClassIsChildOf(InvClass, class'GigaLightningGun');
 }
 
 function Tick(float DeltaTime)
 {
     local Weapon W;
-    local int NewAmmo, GainedAmmo, AmmoDelta;
+    local int i, NewAmmo, GainedAmmo, AmmoDelta;
 
     Super.Tick(DeltaTime);
 
     // Aplica la duracion modificada del Double Damage (36s o 24s) apenas termina Touch()
-    if (bPendingUDamage)
+    for (i = 0; i < PendingUDamage.Length; i++)
     {
-        bPendingUDamage = false;
-        if (PendingUDamagePawn != None && PendingUDamagePawn.Health > 0 && PendingUDamagePawn.HasUDamage())
+        if (PendingUDamage[i].P != None && PendingUDamage[i].P.Health > 0 && PendingUDamage[i].P.HasUDamage())
         {
-            PendingUDamagePawn.UDamageTime = 0.0;
-            PendingUDamagePawn.EnableUDamage(30.0 * PendingUDamageFactor);
+            PendingUDamage[i].P.UDamageTime = 0.0;
+            PendingUDamage[i].P.EnableUDamage(30.0 * PendingUDamage[i].Factor);
         }
-        PendingUDamagePawn = None;
     }
+    PendingUDamage.Length = 0;
 
     // Aplica el +20% o -20% de municion al levantar un arma del piso
-    if (bPendingWeaponAmmo)
+    for (i = 0; i < PendingAmmo.Length; i++)
     {
-        bPendingWeaponAmmo = false;
-        if (PendingWeaponPawn != None && PendingWeaponPawn.Health > 0 && PendingWeaponClass != None)
+        if (PendingAmmo[i].P == None || PendingAmmo[i].P.Health <= 0 || PendingAmmo[i].WeaponClass == None)
+            continue;
+        W = Weapon(PendingAmmo[i].P.FindInventoryType(PendingAmmo[i].WeaponClass));
+        if (W == None)
+            continue;
+        NewAmmo = W.AmmoAmount(0);
+        GainedAmmo = NewAmmo - PendingAmmo[i].OldAmmo;
+        if (GainedAmmo <= 0)
+            continue;
+        if (PendingAmmo[i].Factor > 1.00)
         {
-            W = Weapon(PendingWeaponPawn.FindInventoryType(PendingWeaponClass));
-            if (W != None)
-            {
-                NewAmmo = W.AmmoAmount(0);
-                GainedAmmo = NewAmmo - PendingWeaponOldAmmo;
-                if (GainedAmmo > 0)
-                {
-                    if (PendingWeaponFactor > 1.00)
-                    {
-                        AmmoDelta = Max(1, int(float(GainedAmmo) * (PendingWeaponFactor - 1.00) + 0.5));
-                        W.AddAmmo(AmmoDelta, 0);
-                    }
-                    else if (PendingWeaponFactor < 1.00)
-                    {
-                        // Sin minimo de 1 y nunca toda la municion recogida: con armas de una
-                        // sola carga (Redeemer) la reduccion es 0 y el jugador conserva el arma.
-                        AmmoDelta = Min(int(float(GainedAmmo) * (1.00 - PendingWeaponFactor) + 0.5), GainedAmmo - 1);
-                        if (AmmoDelta > 0)
-                        {
-                            W.ConsumeAmmo(0, AmmoDelta);
-                        }
-                    }
-                }
-            }
+            AmmoDelta = Max(1, int(float(GainedAmmo) * (PendingAmmo[i].Factor - 1.00) + 0.5));
+            W.AddAmmo(AmmoDelta, 0);
         }
-        PendingWeaponPawn = None;
-        PendingWeaponClass = None;
+        else if (PendingAmmo[i].Factor < 1.00)
+        {
+            // Sin minimo de 1 y nunca toda la municion recogida: con armas de una
+            // sola carga (Redeemer) la reduccion es 0 y el jugador conserva el arma.
+            AmmoDelta = Min(int(float(GainedAmmo) * (1.00 - PendingAmmo[i].Factor) + 0.5), GainedAmmo - 1);
+            if (AmmoDelta > 0)
+                W.ConsumeAmmo(0, AmmoDelta);
+        }
     }
+    PendingAmmo.Length = 0;
 }
 
 function RollKayrosForWave()
