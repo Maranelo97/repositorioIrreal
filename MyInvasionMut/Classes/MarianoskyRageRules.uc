@@ -1,5 +1,10 @@
 class MarianoskyRageRules extends GameRules;
 
+// Recompensa por matar al Rey Cthulhu: Double Damage para los que estaban vivos, hasta que
+// termina la oleada (se le da un tiempo largo y se le saca al terminar, en Tick)
+var array<xPawn> RewardedPawns;
+const RewardUDamageTime = 3600.0;
+
 function Controller ReviveOneFallenTeammate()
 {
     local Controller C, ChosenHuman, ChosenBot, Target;
@@ -56,24 +61,53 @@ function Controller ReviveOneFallenTeammate()
     return Target;
 }
 
-function DropDoubleDamageLoot(Monster M)
+// Vida, escudo, municion y adrenalina al maximo, y Double Damage hasta el final de la oleada
+function GiveBossReward(Controller C)
 {
-    local UDamagePack DroppedUDamage;
+    local Inventory Inv;
+    local Weapon W;
+    local xPawn P;
 
-    if (M == None)
+    C.Pawn.Health = Max(C.Pawn.Health, int(C.Pawn.SuperHealthMax));
+    C.Pawn.AddShieldStrength(int(C.Pawn.GetShieldStrengthMax()));
+    if (C.bAdrenalineEnabled)
+        C.Adrenaline = C.AdrenalineMax;
+
+    // Las armas de GIGACHADrenalina gastan adrenalina, que ya quedo llena
+    for (Inv = C.Pawn.Inventory; Inv != None; Inv = Inv.Inventory)
     {
+        W = Weapon(Inv);
+        if (W != None && !class'MutKayros'.static.IsAdrenalineWeapon(W.Class))
+            W.MaxOutAmmo();
+    }
+
+    P = xPawn(C.Pawn);
+    if (P != None)
+    {
+        P.EnableUDamage(RewardUDamageTime);
+        RewardedPawns[RewardedPawns.Length] = P;
+    }
+}
+
+// Al terminar la oleada se saca el Double Damage de la recompensa
+function Tick(float DeltaTime)
+{
+    local int i;
+
+    Super.Tick(DeltaTime);
+    if (RewardedPawns.Length == 0 || Invasion(Level.Game) == None || Invasion(Level.Game).bWaveInProgress)
         return;
-    }
 
-    DroppedUDamage = Spawn(class'XPickups.UDamagePack',,, M.Location);
-    if (DroppedUDamage != None)
+    for (i = 0; i < RewardedPawns.Length; i++)
     {
-        DroppedUDamage.InitDroppedPickupFor(None);
-        DroppedUDamage.Velocity = vect(0, 0, 180);
-        DroppedUDamage.bInstantRespawn = false;
-        DroppedUDamage.RespawnTime = 0.0;
-        DroppedUDamage.LifeSpan = 45.0;
+        if (RewardedPawns[i] != None && !RewardedPawns[i].bDeleteMe && RewardedPawns[i].HasUDamage())
+        {
+            if (RewardedPawns[i].UDamageTimer != None)
+                RewardedPawns[i].UDamageTimer.Destroy();
+            RewardedPawns[i].DisableUDamage();
+        }
     }
+    RewardedPawns.Length = 0;
 }
 
 function int NetDamage(int OriginalDamage, int Damage, pawn injured, pawn instigatedBy, vector HitLocation, out vector Momentum, class<DamageType> DamageType)
@@ -151,17 +185,15 @@ function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> dam
             Killer.PlayerReplicationInfo.NetUpdateTime = Level.TimeSeconds - 1;
         }
 
-        // Recarga +25 de escudo a todos los jugadores y bots aliados vivos
+        // Recompensa para todos los jugadores y bots aliados vivos. Va antes de revivir: el
+        // companero revivido no la recibe (volver a la batalla ya es bastante premio)
         for (C = Level.ControllerList; C != None; C = C.NextController)
         {
             if (C.bIsPlayer && C.Pawn != None && C.Pawn.Health > 0 && Monster(C.Pawn) == None)
             {
-                C.Pawn.AddShieldStrength(25);
+                GiveBossReward(C);
             }
         }
-
-        // Suelta un Double Damage como botin en el lugar donde murio el Rey Cthulhu
-        DropDoubleDamageLoot(M);
 
         // Revive automaticamente a un companero (jugador o bot) caido durante la oleada
         RevivedTeammate = ReviveOneFallenTeammate();

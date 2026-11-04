@@ -12,6 +12,7 @@ struct PendingUDamageEntry
 {
     var xPawn P;
     var float Factor;
+    var float OldTime;   // UDamageTime antes de levantarlo (por ejemplo, el del Rey Cthulhu)
 };
 var array<PendingUDamageEntry> PendingUDamage;
 
@@ -129,6 +130,7 @@ function PreparePickupForPawn(Pawn Other, Pickup item)
         PendingUDamage.Length = i + 1;
         PendingUDamage[i].P = xPawn(Other);
         PendingUDamage[i].Factor = Factor;
+        PendingUDamage[i].OldTime = xPawn(Other).UDamageTime;
         return;
     }
 
@@ -168,7 +170,8 @@ function Tick(float DeltaTime)
     {
         if (PendingUDamage[i].P != None && PendingUDamage[i].P.Health > 0 && PendingUDamage[i].P.HasUDamage())
         {
-            PendingUDamage[i].P.UDamageTime = 0.0;
+            // Vuelve al tiempo que tenia antes; EnableUDamage se queda con el mayor
+            PendingUDamage[i].P.UDamageTime = PendingUDamage[i].OldTime;
             PendingUDamage[i].P.EnableUDamage(30.0 * PendingUDamage[i].Factor);
         }
     }

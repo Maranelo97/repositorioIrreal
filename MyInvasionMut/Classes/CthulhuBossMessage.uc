@@ -89,7 +89,10 @@ static function RenderComplexMessage(Canvas C, out float XL, out float YL, optio
         // Muerte del jefe: titulo en rojo y las recompensas debajo, una por linea
         XL = DrawCenteredLine(C, static.GetString(Switch), CenterY, 255, 0, 0, CurrentAlpha, LineH);
         YL = LineH;
-        W = DrawCenteredLine(C, "Suelta Double Damage y +25 de escudo para el equipo!", CenterY + YL, 255, 255, 255, CurrentAlpha, LineH);
+        W = DrawCenteredLine(C, class'MutChatDokaBots'.static.FixAccents("Vida, escudo, munición y adrenalina al máximo"), CenterY + YL, 255, 255, 255, CurrentAlpha, LineH);
+        XL = FMax(XL, W);
+        YL += LineH;
+        W = DrawCenteredLine(C, class'MutChatDokaBots'.static.FixAccents("¡y Double Damage hasta el final de la oleada!"), CenterY + YL, 255, 255, 255, CurrentAlpha, LineH);
         XL = FMax(XL, W);
         YL += LineH;
         if (RelatedPRI_1 != None)
