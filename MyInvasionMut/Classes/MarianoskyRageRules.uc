@@ -5,6 +5,13 @@ class MarianoskyRageRules extends GameRules;
 var array<xPawn> RewardedPawns;
 const RewardUDamageTime = 3600.0;
 
+// Desde el principio, para que el contador ya este escondido cuando llegue la recompensa
+function PostBeginPlay()
+{
+    Super.PostBeginPlay();
+    Spawn(class'CthulhuRewardHud');
+}
+
 function Controller ReviveOneFallenTeammate()
 {
     local Controller C, ChosenHuman, ChosenBot, Target;
@@ -52,6 +59,9 @@ function Controller ReviveOneFallenTeammate()
             // como hace Invasion al revivir entre oleadas, primero vuelve a "esperando para jugar".
             // WaitDelay bloquea el reinicio hasta 2 s despues de morir; se libera por si murio recien.
             PlayerController(Target).GotoState('PlayerWaiting');
+            // En un cliente, el estado Spectating ignora ClientRestart: sin avisarle primero, se
+            // pierde el reinicio y se queda con la camara en tercera persona de cuando miraba a otro.
+            PlayerController(Target).ClientGotoState('PlayerWaiting', '');
             PlayerController(Target).WaitDelay = Level.TimeSeconds;
             PlayerController(Target).SetViewTarget(Target);
         }

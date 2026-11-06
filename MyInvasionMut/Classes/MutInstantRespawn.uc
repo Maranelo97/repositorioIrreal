@@ -50,5 +50,5 @@ defaultproperties
     bAddToServerPackages=True
     GroupName="InstantRespawn"
     FriendlyName="[Irreal] Es todo muy irreal"
-    Description="Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer."
+    Description="Elimina el cooldown de los items del piso (balas, salud, escudos y armas) para que se regeneren al instante. No afecta a items que los jugadores dejaron caer. (Ver 1.4.1)"
 }
