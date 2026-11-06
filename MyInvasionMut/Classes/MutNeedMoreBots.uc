@@ -8,6 +8,12 @@ var config int BotsPerPlayer;   // bots por cada jugador real
 var config int MaxBots;         // tope de bots en la partida
 var config bool bHumansVsBots;    // en partidas por equipos: jugadores en el Azul y bots en el Rojo
 
+// Un jugador que entra y sale enseguida no cambia los bots: el objetivo nuevo se aplica recien
+// cuando se mantiene igual durante BotCountDelay segundos
+const BotCountDelay = 3.0;
+var int TargetBots;
+var float TargetBotsTime;
+
 var localized string BotsPerPlayerText, BotsPerPlayerDesc;
 var localized string MaxBotsText, MaxBotsDesc;
 var localized string HumansVsBotsText, HumansVsBotsDesc;
@@ -216,6 +222,21 @@ function UpdateBotCount()
     RealPlayers = GetRealPlayerCount();
     DesiredBots = DesiredBotCount(RealPlayers);
 
+    // Durante la partida espera a que el objetivo se estabilice. MinPlayers tambien espera,
+    // porque con ese valor el motor saca bots por su cuenta.
+    if (!DM.bWaitingToStartMatch)
+    {
+        if (DesiredBots != TargetBots)
+        {
+            TargetBots = DesiredBots;
+            TargetBotsTime = Level.TimeSeconds;
+        }
+        if (Level.TimeSeconds - TargetBotsTime < BotCountDelay)
+        {
+            return;
+        }
+    }
+
     // Sincronizar las propiedades de DeathMatch para que el motor mantenga la proporcion
     DM.bAutoNumBots = false;
     DM.bCustomBots = false;
@@ -367,6 +388,7 @@ defaultproperties
     // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
     // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
     bAddToServerPackages=True
+    TargetBots=-1
     BotsPerPlayer=3
     MaxBots=24
     bHumansVsBots=True
