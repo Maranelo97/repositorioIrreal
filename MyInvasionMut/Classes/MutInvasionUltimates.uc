@@ -67,8 +67,7 @@ function xWeaponBase PickRandomWeaponBase(bool bRotationOnly)
             if (!IsSpecialWeapon(Candidate.WeaponType))
                 continue;
         }
-        else if (Candidate.WeaponType == class'XWeapons.LinkGun'
-            || IsSpecialWeapon(Candidate.WeaponType))
+        else if (IsSpecialWeapon(Candidate.WeaponType))
             continue;
 
         EligibleCount++;
