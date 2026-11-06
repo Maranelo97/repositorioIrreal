@@ -400,5 +400,5 @@ defaultproperties
     MaxBotsDesc="Tope de bots en la partida, sin importar cuantos jugadores haya (de 0 a 32) [por defecto: 24]"
     GroupName="BotCountMut"
     FriendlyName="[Irreal] Necesitamos mas BOTS"
-    Description="Ajusta dinamicamente la cantidad de bots segun los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un maximo (24 por defecto). En las partidas por equipos (menos Invasion) pone a todos los jugadores reales en el Equipo Azul y a todos los bots en el Rojo, sin balanceo automatico. Todo se cambia en Configurar mutadores."
+    Description="Ajusta dinamicamente la cantidad de bots segun los jugadores reales conectados: una cantidad de bots por cada jugador (3 por defecto) con un maximo (24 por defecto). En las partidas por equipos (menos Invasion) pone a todos los jugadores reales en el Equipo Azul y a todos los bots en el Rojo, sin balanceo automatico. Todo se cambia en Configurar mutadores. (Ver 1.4.1)"
 }

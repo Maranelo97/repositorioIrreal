@@ -338,5 +338,5 @@ defaultproperties
     LightningGunDesc="La Lightning Gun puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
     GroupName="InvasionUltimates"
     FriendlyName="[Irreal] Invasion: Armas ultimas"
-    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no). Tambien se puede hacer que el punto cambie de lugar en cada oleada."
+    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no). Tambien se puede hacer que el punto cambie de lugar en cada oleada. (Ver 1.4.1)"
 }
