@@ -6,17 +6,24 @@ var config bool bIonPainter;
 var config bool bLightningGun;
 var config bool bRepeatPickup;   // si se desactiva, cada jugador lo recoge una sola vez por oleada
 var config bool bBotsCanPickup;  // si se desactiva, los bots no recogen ni buscan el arma del punto especial
+var config bool bRotateLocation; // el punto especial cambia de lugar al terminar cada oleada
 
 var localized string RedeemerText, RedeemerDesc;
 var localized string IonPainterText, IonPainterDesc;
 var localized string LightningGunText, LightningGunDesc;
 var localized string RepeatPickupText, RepeatPickupDesc;
 var localized string BotsCanPickupText, BotsCanPickupDesc;
+var localized string RotateLocationText, RotateLocationDesc;
 
 var xWeaponBase UltimateBase;
 var UltimatesRules Rules;
 var int CurrentWaveNum;
 var bool bInitialized;
+
+// Para que el punto cambie de lugar: todos los puntos de arma del mapa y el arma que le
+// devuelven a cada uno al dejar de ser el especial (None en las pesadas, que quedan vacios)
+var array<xWeaponBase> RotationBases;
+var array< class<Weapon> > RotationWeapons;
 
 function PostBeginPlay()
 {
@@ -131,6 +138,75 @@ function SetUltimate(int WeaponIndex)
     UltimateBase.SpawnPickup();
 }
 
+// Anota los puntos de arma del mapa. Va antes de DisableOtherSpecialBases, que les borra el arma.
+function BuildRotationBases()
+{
+    local xWeaponBase Candidate;
+    local int i;
+
+    RotationBases.Length = 0;
+    RotationWeapons.Length = 0;
+    foreach AllActors(class'XGame.xWeaponBase', Candidate)
+    {
+        if (Candidate.WeaponType == None)
+            continue;
+
+        i = RotationBases.Length;
+        RotationBases[i] = Candidate;
+        if (IsSpecialWeapon(Candidate.WeaponType))
+            RotationWeapons[i] = None;
+        else
+            RotationWeapons[i] = Candidate.WeaponType;
+    }
+}
+
+// Elige un punto al azar, distinto del actual si hay mas de uno
+function xWeaponBase PickRotationBase()
+{
+    local xWeaponBase Chosen;
+    local int i, EligibleCount;
+
+    for (i = 0; i < RotationBases.Length; i++)
+    {
+        if (RotationBases[i] == UltimateBase && RotationBases.Length > 1)
+            continue;
+
+        EligibleCount++;
+        if (Rand(EligibleCount) == 0)
+            Chosen = RotationBases[i];
+    }
+    return Chosen;
+}
+
+// Le devuelve su arma normal al punto actual y pasa a otro. SetUltimate pone el arma en el nuevo.
+function MoveUltimate()
+{
+    local xWeaponBase NewBase;
+    local int i;
+
+    NewBase = PickRotationBase();
+    if (NewBase == None || NewBase == UltimateBase)
+        return;
+
+    RemoveBasePickup(UltimateBase);
+    for (i = 0; i < RotationBases.Length; i++)
+    {
+        if (RotationBases[i] == UltimateBase)
+        {
+            UltimateBase.WeaponType = RotationWeapons[i];
+            if (RotationWeapons[i] != None)
+            {
+                UltimateBase.PowerUp = RotationWeapons[i].default.PickupClass;
+                UltimateBase.SpawnPickup();
+            }
+            else
+                UltimateBase.PowerUp = None;
+            break;
+        }
+    }
+    UltimateBase = NewBase;
+}
+
 // Elige al azar entre las armas activadas (mismos indices que SetUltimate).
 // Si estan todas desactivadas, usa las tres para que el punto no quede vacio.
 function int PickUltimateIndex()
@@ -170,9 +246,18 @@ function Timer()
     if (!bInitialized)
     {
         // Si ya hay una ulti o pesada en el mapa, conservar ese punto; si no, elegir un arma normal.
-        UltimateBase = PickRandomWeaponBase(true);
-        if (UltimateBase == None)
-            UltimateBase = PickRandomWeaponBase(false);
+        // Si el punto cambia de lugar, cualquier punto de arma del mapa puede ser el primero.
+        if (bRotateLocation)
+        {
+            BuildRotationBases();
+            UltimateBase = PickRotationBase();
+        }
+        else
+        {
+            UltimateBase = PickRandomWeaponBase(true);
+            if (UltimateBase == None)
+                UltimateBase = PickRandomWeaponBase(false);
+        }
 
         if (UltimateBase == None)
         {
@@ -193,7 +278,11 @@ function Timer()
     if (InvGame.WaveNum != CurrentWaveNum)
     {
         if (CurrentWaveNum >= 0)
+        {
+            if (bRotateLocation)
+                MoveUltimate();
             SetUltimate(PickUltimateIndex());
+        }
         CurrentWaveNum = InvGame.WaveNum;
     }
 }
@@ -204,9 +293,10 @@ static function FillPlayInfo(PlayInfo PlayInfo)
     PlayInfo.AddSetting(default.RulesGroup, "bRedeemer", default.RedeemerText, 0, 1, "Check");
     PlayInfo.AddSetting(default.RulesGroup, "bIonPainter", default.IonPainterText, 0, 2, "Check");
     PlayInfo.AddSetting(default.RulesGroup, "bLightningGun", default.LightningGunText, 0, 3, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bRotateLocation", default.RotateLocationText, 0, 4, "Check");
     // Solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
-    PlayInfo.AddSetting(default.RulesGroup, "bRepeatPickup", default.RepeatPickupText, 0, 4, "Check", , , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bBotsCanPickup", default.BotsCanPickupText, 0, 5, "Check", , , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bRepeatPickup", default.RepeatPickupText, 0, 5, "Check", , , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bBotsCanPickup", default.BotsCanPickupText, 0, 6, "Check", , , , True);
 }
 
 static event string GetDescriptionText(string PropName)
@@ -218,6 +308,7 @@ static event string GetDescriptionText(string PropName)
         case "bLightningGun": return default.LightningGunDesc;
         case "bRepeatPickup": return default.RepeatPickupDesc;
         case "bBotsCanPickup": return default.BotsCanPickupDesc;
+        case "bRotateLocation": return default.RotateLocationDesc;
     }
     return Super.GetDescriptionText(PropName);
 }
@@ -232,6 +323,9 @@ defaultproperties
     bLightningGun=True
     bRepeatPickup=True
     bBotsCanPickup=False
+    bRotateLocation=False
+    RotateLocationText="El punto cambia de lugar en cada oleada"
+    RotateLocationDesc="Al terminar cada oleada, el arma pasa a otro punto de arma del mapa elegido al azar, y el punto anterior vuelve a tener su arma normal. Los puntos de armas pesadas del mapa quedan vacios cuando no les toca [por defecto: desactivada]"
     BotsCanPickupText="Los bots pueden recoger las armas ultimas"
     BotsCanPickupDesc="Si se desactiva, los bots no buscan el punto especial y, si pasan por encima, no recogen el arma: queda para los jugadores [por defecto: desactivada]"
     RepeatPickupText="Recogerla varias veces por oleada"
@@ -244,5 +338,5 @@ defaultproperties
     LightningGunDesc="La Lightning Gun puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
     GroupName="InvasionUltimates"
     FriendlyName="[Irreal] Invasion: Armas ultimas"
-    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no)."
+    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no). Tambien se puede hacer que el punto cambie de lugar en cada oleada."
 }
