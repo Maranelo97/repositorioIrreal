@@ -5,6 +5,13 @@ class MarianoskyRageRules extends GameRules;
 var array<xPawn> RewardedPawns;
 const RewardUDamageTime = 3600.0;
 
+// Desde el principio, para que el contador ya este escondido cuando llegue la recompensa
+function PostBeginPlay()
+{
+    Super.PostBeginPlay();
+    Spawn(class'CthulhuRewardHud');
+}
+
 function Controller ReviveOneFallenTeammate()
 {
     local Controller C, ChosenHuman, ChosenBot, Target;
