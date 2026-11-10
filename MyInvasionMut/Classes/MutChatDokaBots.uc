@@ -498,5 +498,5 @@ defaultproperties
     LastWaveNum=-1
     GroupName="ChatDokaBots"
     FriendlyName="[Irreal] Chat-doka Bots"
-    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores. (Ver 1.4.1)"
+    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores. (Ver 1.4.2)"
 }
