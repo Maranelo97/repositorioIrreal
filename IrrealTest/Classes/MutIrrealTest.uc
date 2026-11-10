@@ -88,6 +88,8 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         SetUltimateWeapon(Arg, Sender);
     else if (Cmd == "adrenalina")
         SetAdrenaline(Arg, Sender);
+    else if (Cmd == "oleada")
+        SetWave(Arg, Sender);
     else
         ShowHelp(Sender);
 }
@@ -113,6 +115,43 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
     Sender.ClientMessage("  irreal adrenalina [0-100] - pone tu adrenalina en ese valor (100 si no se indica)");
+    Sender.ClientMessage("  irreal oleada N - entre oleadas, elige cual es la que viene (de 1 a la final)");
+}
+
+// Entre oleadas cambia cual es la que viene. Durante una oleada no: cambiaria los monstruos que
+// estan apareciendo. WaveNum empieza en 0; el HUD la toma de InvasionGameReplicationInfo.
+function SetWave(string Arg, PlayerController Sender)
+{
+    local Invasion InvGame;
+    local InvasionGameReplicationInfo GRI;
+    local int Wave;
+
+    InvGame = Invasion(Level.Game);
+    if (InvGame == None)
+    {
+        Sender.ClientMessage("Este comando solo funciona en Invasion.");
+        return;
+    }
+    if (InvGame.bWaveInProgress)
+    {
+        Sender.ClientMessage("Durante una oleada no se puede cambiar: usa irreal kill y despues irreal oleada.");
+        return;
+    }
+    Wave = int(Arg);
+    if (Wave < 1 || Wave > InvGame.FinalWave)
+    {
+        Sender.ClientMessage("Uso: irreal oleada N, con N de 1 a " $ InvGame.FinalWave $ ".");
+        return;
+    }
+
+    InvGame.WaveNum = Wave - 1;
+    GRI = InvasionGameReplicationInfo(InvGame.GameReplicationInfo);
+    if (GRI != None)
+    {
+        GRI.WaveNumber = Wave - 1;
+        GRI.NetUpdateTime = Level.TimeSeconds - 1;
+    }
+    Sender.ClientMessage("Prueba: la oleada que viene es la " $ Wave $ ".");
 }
 
 // Invasion suma 1 a WaveNum al terminar cada oleada, asi que entre oleadas
@@ -332,12 +371,12 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         break;
     if (UltMut == None)
     {
-        Sender.ClientMessage("Invasion: Armas ultimas no esta activo.");
+        Sender.ClientMessage("Murio una banda de gente no esta activo.");
         return;
     }
     if (UltMut.UltimateBase == None)
     {
-        Sender.ClientMessage("Armas ultimas todavia no eligio su punto; proba de nuevo en unos segundos.");
+        Sender.ClientMessage("Murio una banda de gente todavia no eligio su punto; proba de nuevo en unos segundos.");
         return;
     }
 
@@ -403,5 +442,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho y ulti 1-3 (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.1)"
+    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.1)"
 }

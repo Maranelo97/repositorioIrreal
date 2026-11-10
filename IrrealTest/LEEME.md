@@ -22,6 +22,7 @@ Cada comando se puede escribir como `irreal ...` o como `mutate test ...` (por e
 | `irreal kayros poco` / `mucho` | Te da Poco o Mucho Kayros hasta la próxima oleada |
 | `irreal ulti 1` / `2` / `3` | Cambia el arma del punto especial de Armas últimas y además te la da (o te la recarga): 1 Redeemer, 2 Ion Painter, 3 Lightning Gun (también acepta `redeemer`, `ion` y `lightning`). Con GIGACHADrenalina activo te da la versión que usa adrenalina. El arma que te da no pasa por Kayros; para probar Kayros, levantarla del punto especial |
 | `irreal adrenalina` / `irreal adrenalina 40` | Pone tu adrenalina en 100, o en el número que se indique (de 0 a 100). Sirve para probar combos y GIGACHADrenalina |
+| `irreal oleada 15` | Entre oleadas, elige cuál es la que viene (de 1 a la final). Durante una oleada no funciona: primero `irreal kill` |
 
 `irreal kayros` e `irreal ulti` se pueden usar durante una oleada (vale hasta que termina) o entre oleadas (vale para la oleada que viene; sin esto, el sorteo al empezar la oleada pisaría la elección).
 

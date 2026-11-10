@@ -323,9 +323,9 @@ defaultproperties
     bLightningGun=True
     bRepeatPickup=True
     bBotsCanPickup=False
-    bRotateLocation=False
+    bRotateLocation=True
     RotateLocationText="El punto cambia de lugar en cada oleada"
-    RotateLocationDesc="Al terminar cada oleada, el arma pasa a otro punto de arma del mapa elegido al azar, y el punto anterior vuelve a tener su arma normal. Los puntos de armas pesadas del mapa quedan vacios cuando no les toca [por defecto: desactivada]"
+    RotateLocationDesc="Al terminar cada oleada, el arma pasa a otro punto de arma del mapa elegido al azar, y el punto anterior vuelve a tener su arma normal. Los puntos de armas pesadas del mapa quedan vacios cuando no les toca [por defecto: activada]"
     BotsCanPickupText="Los bots pueden recoger las armas ultimas"
     BotsCanPickupDesc="Si se desactiva, los bots no buscan el punto especial y, si pasan por encima, no recogen el arma: queda para los jugadores [por defecto: desactivada]"
     RepeatPickupText="Recogerla varias veces por oleada"
@@ -337,6 +337,6 @@ defaultproperties
     LightningGunText="Lightning Gun"
     LightningGunDesc="La Lightning Gun puede salir en el punto especial. Si se desactivan las tres armas, se usan todas [por defecto: activada]"
     GroupName="InvasionUltimates"
-    FriendlyName="[Irreal] Invasion: Armas ultimas"
-    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no). Tambien se puede hacer que el punto cambie de lugar en cada oleada. (Ver 1.4.1)"
+    FriendlyName="[Irreal] Murio una banda de gente"
+    Description="Un unico punto de arma alterna al azar entre Redeemer, Ion Painter y Lightning Gun al terminar cada oleada (asi se puede recoger durante el descanso), con respawn instantaneo. Los demas puntos de esas armas quedan vacios. En Configurar mutadores se eligen las armas de la rotacion, si cada jugador puede recogerla varias veces por oleada y si los bots pueden recogerla (por defecto no). Por defecto el punto cambia de lugar en cada oleada. (Ver 1.4.1)"
 }
