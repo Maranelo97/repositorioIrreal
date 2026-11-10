@@ -6,7 +6,7 @@
 // - el Rey Cthulhu (Marianosky's rage) como un circulo rojo mas grande, con su linea del
 //   mismo color.
 // Lo que queda fuera del circulo del radar no se dibuja.
-// Ademas muestra la oleada actual y la final debajo del reloj, con el simbolo del Skaarj
+// Ademas muestra la oleada actual y la final en lugar del reloj, con el simbolo del Skaarj
 // (opcion "Mostrar la oleada").
 // La ubicacion de cada punto sale de InvasionRadarMath, asi todo queda pegado a los puntos
 // del radar aunque cambie de lugar o tamano.
@@ -20,7 +20,7 @@ var float DotRadiusScale;   // radio del punto fijo respecto del tamano del punt
 var float ChampionRadiusScale;  // radio del punto del Rey Cthulhu (mas grande que el resto)
 var float FullLengthExtra;  // diferencia extra (sobre MinHeightDiff) para el largo maximo de la linea
 var float GroundTraceDist;  // hasta donde se busca el piso debajo de un pawn en el aire
-// Oleada debajo del reloj, armada con los mismos widgets que el reloj de HudCDeathMatch
+// Oleada en lugar del reloj, armada con los mismos widgets que el reloj de HudCDeathMatch
 // (TimerBackgroundDisc, TimerBackground, TimerIcon y los numeros DigitsBig), una fila mas abajo
 var string WaveIconName;             // simbolo de equipo del Skaarj, del juego
 var Material WaveIcon;
@@ -31,6 +31,7 @@ var HudBase.SpriteWidget WaveSlash;    // un escalon de la barra "/" entre la ol
 var HudBase.NumericWidget WaveNumber;  // oleada actual
 var HudBase.NumericWidget WaveFinal;   // oleada final
 var HudBase.DigitSet WaveDigits;       // los mismos numeros que el reloj (DigitsBig)
+var bool bHidTimer;                    // si este overlay apago el reloj del HUD
 var int DigitAdvance;                  // ancho de un numero, en las unidades de OffsetX de los numeros
 
 // Altura del piso sobre el que esta P: sus pies si camina, o el piso debajo si salta o cae.
@@ -116,10 +117,29 @@ simulated function Render(Canvas C)
     local bool bChampionOnRadar, bSpecial;
 
     H = HUDInvasion(Owner);
-    if (Settings == None || !class'InvasionRadarMath'.static.RadarDrawnThisFrame(H))
+    if (Settings == None)
         return;
-    if (Settings.bShowWave)
+
+    // La oleada ocupa el lugar del reloj: con la opcion activada, el reloj del HUD queda apagado
+    // y la oleada se dibuja siempre, tambien sin radar (por ejemplo, muerto mirando a otro).
+    if (H != None && Settings.bShowWave)
+    {
+        if (H.bDrawTimer)
+        {
+            H.bDrawTimer = false;
+            bHidTimer = true;
+        }
         DrawWave(C, H);
+    }
+    else if (bHidTimer)
+    {
+        if (H != None)
+            H.bDrawTimer = true;
+        bHidTimer = false;
+    }
+
+    if (!class'InvasionRadarMath'.static.RadarDrawnThisFrame(H))
+        return;
     if (!Settings.bColoredDots && !Settings.bShowHeightLines)
         return;
 
@@ -189,12 +209,12 @@ simulated function Render(Canvas C)
     }
 }
 
-// Simbolo del Skaarj y "3 - 16" debajo del reloj de arriba a la izquierda, con los mismos
-// widgets que el reloj: el mismo circulo, la misma barra y los mismos numeros, y el simbolo del
-// tamano del cronometro. Los dibuja el propio HUD (DrawSpriteWidget / DrawNumericWidget), asi
-// escalan igual que el reloj con la resolucion y con HudScale. Los OffsetX/OffsetY de cada
-// widget estan en pixeles de su textura (se multiplican por su TextureScale), y todo va una
-// fila mas abajo que el reloj (unas 30 unidades). La oleada sale de InvasionGameReplicationInfo
+// Simbolo del Skaarj y "3 / 16" arriba a la izquierda, en el lugar del reloj (que se apaga con
+// bDrawTimer del HUD), con los mismos widgets que el reloj: el mismo circulo, la misma barra y
+// los mismos numeros, y el simbolo del tamano del cronometro. Los dibuja el propio HUD
+// (DrawSpriteWidget / DrawNumericWidget), asi escalan igual que el reloj con la resolucion y con
+// HudScale. Los OffsetX/OffsetY de cada widget estan en pixeles de su textura (se multiplican
+// por su TextureScale) y son los del reloj. La oleada sale de InvasionGameReplicationInfo
 // (empieza en 0; en el descanso ya es la que viene) y la final la manda el servidor en Settings.
 simulated function DrawWave(Canvas C, HUDInvasion H)
 {
@@ -264,12 +284,12 @@ defaultproperties
     FullLengthExtra=900.0
     GroundTraceDist=3000.0
     WaveIconName="TeamSymbols_UT2004.Team.Skaarj"
-    WaveDisc=(WidgetTexture=Texture'HUDContent.Generic.HUD',RenderStyle=STY_Alpha,TextureCoords=(X1=119,Y1=258,X2=173,Y2=313),TextureScale=0.53,OffsetY=57,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
-    WaveBack=(WidgetTexture=Texture'HUDContent.Generic.HUD',RenderStyle=STY_Alpha,TextureCoords=(X1=168,Y1=211,X2=334,Y2=255),TextureScale=0.4,OffsetX=60,OffsetY=89,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=0,G=0,B=0,A=150),Tints[1]=(R=0,G=0,B=0,A=150))
-    WaveSymbol=(RenderStyle=STY_Alpha,TextureCoords=(X1=0,Y1=0,X2=256,Y2=256),TextureScale=0.073,OffsetX=75,OffsetY=479,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=180,G=180,B=188,A=255),Tints[1]=(R=180,G=180,B=188,A=255))
+    WaveDisc=(WidgetTexture=Texture'HUDContent.Generic.HUD',RenderStyle=STY_Alpha,TextureCoords=(X1=119,Y1=258,X2=173,Y2=313),TextureScale=0.53,OffsetY=0,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
+    WaveBack=(WidgetTexture=Texture'HUDContent.Generic.HUD',RenderStyle=STY_Alpha,TextureCoords=(X1=168,Y1=211,X2=334,Y2=255),TextureScale=0.4,OffsetX=60,OffsetY=14,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=0,G=0,B=0,A=150),Tints[1]=(R=0,G=0,B=0,A=150))
+    WaveSymbol=(RenderStyle=STY_Alpha,TextureCoords=(X1=0,Y1=0,X2=256,Y2=256),TextureScale=0.073,OffsetX=75,OffsetY=68,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=180,G=180,B=188,A=255),Tints[1]=(R=180,G=180,B=188,A=255))
     WaveSlash=(WidgetTexture=Texture'Engine.WhiteTexture',RenderStyle=STY_Alpha,TextureCoords=(X2=6,Y2=2),TextureScale=0.32,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=180,G=180,B=188,A=255),Tints[1]=(R=180,G=180,B=188,A=255))
-    WaveNumber=(RenderStyle=STY_Alpha,MinDigitCount=1,TextureScale=0.32,DrawPivot=DP_MiddleLeft,OffsetX=90,OffsetY=139,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
-    WaveFinal=(RenderStyle=STY_Alpha,MinDigitCount=1,TextureScale=0.32,DrawPivot=DP_MiddleLeft,OffsetY=139,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
+    WaveNumber=(RenderStyle=STY_Alpha,MinDigitCount=1,TextureScale=0.32,DrawPivot=DP_MiddleLeft,OffsetX=90,OffsetY=45,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
+    WaveFinal=(RenderStyle=STY_Alpha,MinDigitCount=1,TextureScale=0.32,DrawPivot=DP_MiddleLeft,OffsetY=45,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
     WaveDigits=(DigitTexture=Texture'HUDContent.Generic.HUD',TextureCoords[0]=(X2=38,Y2=38),TextureCoords[1]=(X1=39,X2=77,Y2=38),TextureCoords[2]=(X1=78,X2=116,Y2=38),TextureCoords[3]=(X1=117,X2=155,Y2=38),TextureCoords[4]=(X1=156,X2=194,Y2=38),TextureCoords[5]=(X1=195,X2=233,Y2=38),TextureCoords[6]=(X1=234,X2=272,Y2=38),TextureCoords[7]=(X1=273,X2=311,Y2=38),TextureCoords[8]=(X1=312,X2=350,Y2=38),TextureCoords[9]=(X1=351,X2=389,Y2=38),TextureCoords[10]=(X1=390,X2=428,Y2=38))
     DigitAdvance=39
     bHidden=True
