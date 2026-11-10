@@ -53,7 +53,7 @@ static function int MarkTypeFor(Pawn P, Controller Viewer)
 
 // Pickups que vale la pena marcar, y solo si Viewer los puede agarrar ahora: el barril de
 // vida, los escudos, el Double Damage y las armas ultimas (si no la tiene ya, ni la uso esta
-// oleada con Armas ultimas). Los que estan esperando reaparecer quedan ocultos (bHidden).
+// oleada con Murio una banda de gente). Los que estan esperando reaparecer quedan ocultos (bHidden).
 // Las pastillas de adrenalina se marcan aparte, por grupos (ver UpdateMarks).
 static function bool PickupMarked(Pickup PU, Pawn Viewer)
 {
@@ -77,7 +77,7 @@ static function bool IsUltimateWeapon(class<Inventory> InvClass)
         || ClassIsChildOf(InvClass, class'XWeapons.SniperRifle');
 }
 
-// Armas ultimas con "Recogerla varias veces por oleada" desactivada: ya la agarro esta oleada
+// Murio una banda de gente con "Recogerla varias veces por oleada" desactivada: ya la agarro esta oleada
 static function bool UsedUltimateThisWave(Pickup PU, Pawn Viewer)
 {
     local GameRules G;

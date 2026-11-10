@@ -305,7 +305,7 @@ static function class<Inventory> GigaWeaponFor(class<Inventory> WeaponClass)
     return None;
 }
 
-// Cada vez que aparece un arma ultima en el piso (puntos del mapa, Armas ultimas o un arma
+// Cada vez que aparece un arma ultima en el piso (puntos del mapa, Murio una banda de gente o un arma
 // tirada), se cambia lo que entrega por la version que usa adrenalina
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {

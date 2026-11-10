@@ -332,12 +332,12 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         break;
     if (UltMut == None)
     {
-        Sender.ClientMessage("Invasion: Armas ultimas no esta activo.");
+        Sender.ClientMessage("Murio una banda de gente no esta activo.");
         return;
     }
     if (UltMut.UltimateBase == None)
     {
-        Sender.ClientMessage("Armas ultimas todavia no eligio su punto; proba de nuevo en unos segundos.");
+        Sender.ClientMessage("Murio una banda de gente todavia no eligio su punto; proba de nuevo en unos segundos.");
         return;
     }
 
