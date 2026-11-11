@@ -38,14 +38,16 @@ var array<Combo> TrackedCombos;
 var array<float> TrackedTimes;
 const MinComboAgeToCancel = 1.0;
 
-// Al cortar un combo con la adrenalina en 100 (por ejemplo con adrenalina infinita), el juego
-// tambien lee esas teclas y lo vuelve a iniciar enseguida. Para evitarlo, la adrenalina queda
-// apenas por debajo de lo que cuesta un combo durante un momento y despues se devuelve.
-var array<Controller> HeldControllers;
-var array<float> HeldUntil;
-var array<float> HeldAdrenaline;
-const ComboRestartBlockTime = 0.5;
-const HeldAdrenalineCap = 99.0;
+// Al cortar un combo, el juego tambien lee esas teclas y le pide al servidor el mismo combo,
+// en el mismo paquete que nuestro aviso de cortarlo. Si el combo se cortara enseguida, ese
+// pedido lo volveria a iniciar (con la adrenalina suficiente). Por eso el corte se hace en el
+// Tick siguiente: cuando llega el pedido del juego el combo sigue activo y no pasa nada.
+// Por si el pedido llegara despues, un combo igual que empiece hasta RestartBlockTime segundos
+// despues de un corte se corta tambien.
+var array<xPawn> CancelPawns;
+var array< class<Combo> > CancelClasses;
+var array<float> CancelTimes;      // 0 mientras el corte esta pendiente
+const RestartBlockTime = 0.5;
 const CancelSoundPitch = 0.75;     // tono del sonido al cortar un combo (el de activacion, mas grave)
 const InfiniteComboMargin = 0.5;   // ver Tick (adrenalina infinita durante un combo)
 
@@ -102,13 +104,15 @@ function Tick(float DeltaTime)
 
     Super.Tick(DeltaTime);
 
+    if (CancelPawns.Length > 0)
+        ProcessCancels();
+
     for (C = Level.ControllerList; C != None; C = C.NextController)
     {
         // Adrenalina infinita: solo para los jugadores humanos (los bots harian combos sin parar).
         // Durante un combo queda un poco por encima del maximo: el combo gasta un poquito en
         // cada cuadro despues de esto, y si no el HUD mostraria 99.
-        if (bInfiniteAdrenaline && PlayerController(C) != None && C.bAdrenalineEnabled && C.Pawn != None
-            && HeldIndex(C) < 0)
+        if (bInfiniteAdrenaline && PlayerController(C) != None && C.bAdrenalineEnabled && C.Pawn != None)
         {
             C.Adrenaline = C.AdrenalineMax;
             if (xPawn(C.Pawn) != None && xPawn(C.Pawn).CurrentCombo != None)
@@ -134,59 +138,6 @@ function Tick(float DeltaTime)
             TrackedTimes.Remove(i, 1);
         }
     }
-
-    // Adrenalina retenida despues de cortar un combo: se mantiene debajo de 100 y al terminar
-    // el momento se devuelve lo que habia (con adrenalina infinita, el Tick siguiente la llena)
-    for (i = HeldControllers.Length - 1; i >= 0; i--)
-    {
-        C = HeldControllers[i];
-        if (C == None || C.bDeleteMe)
-        {
-            RemoveHeld(i);
-            continue;
-        }
-        if (Level.TimeSeconds >= HeldUntil[i])
-        {
-            C.Adrenaline = FClamp(FMax(C.Adrenaline, HeldAdrenaline[i]), 0, C.AdrenalineMax);
-            RemoveHeld(i);
-        }
-        else if (C.Adrenaline > HeldAdrenalineCap)
-            C.Adrenaline = HeldAdrenalineCap;
-    }
-}
-
-function int HeldIndex(Controller C)
-{
-    local int i;
-
-    for (i = 0; i < HeldControllers.Length; i++)
-        if (HeldControllers[i] == C)
-            return i;
-    return -1;
-}
-
-function RemoveHeld(int i)
-{
-    HeldControllers.Remove(i, 1);
-    HeldUntil.Remove(i, 1);
-    HeldAdrenaline.Remove(i, 1);
-}
-
-// Deja la adrenalina apenas debajo del costo de un combo por un momento (ver HeldControllers)
-function HoldAdrenaline(Controller C)
-{
-    local int i;
-
-    i = HeldIndex(C);
-    if (i < 0)
-    {
-        i = HeldControllers.Length;
-        HeldControllers[i] = C;
-        HeldAdrenaline[i] = C.Adrenaline;
-    }
-    HeldUntil[i] = Level.TimeSeconds + ComboRestartBlockTime;
-    if (C.Adrenaline > HeldAdrenalineCap)
-        C.Adrenaline = HeldAdrenalineCap;
 }
 
 // Cada combo gasta su costo a lo largo de su duracion (ver Combo.Tick). Como no se pueden
@@ -259,13 +210,7 @@ function Mutate(string MutateString, PlayerController Sender)
                 if (P.CurrentCombo.Class == ComboClass)
                 {
                     if (bCancelCombos)
-                    {
-                        // El juego no tiene sonido de fin de combo: el de activacion, mas grave
-                        if (P.CurrentCombo.ActivateSound != None)
-                            P.PlaySound(P.CurrentCombo.ActivateSound, SLOT_None, 2 * P.TransientSoundVolume, , , CancelSoundPitch);
-                        P.CurrentCombo.Destroy();
-                        HoldAdrenaline(Sender);
-                    }
+                        QueueCancel(P, ComboClass);
                 }
                 else if (bLowAdrenalineCombos)
                 {
@@ -283,6 +228,51 @@ function Mutate(string MutateString, PlayerController Sender)
         }
     }
     Super.Mutate(MutateString, Sender);
+}
+
+// Anota el corte para el Tick siguiente (ver CancelPawns)
+function QueueCancel(xPawn P, class<Combo> ComboClass)
+{
+    local int i;
+
+    for (i = 0; i < CancelPawns.Length; i++)
+        if (CancelPawns[i] == P)
+            break;
+    CancelPawns[i] = P;
+    CancelClasses[i] = ComboClass;
+    CancelTimes[i] = 0;
+}
+
+// Cortes pendientes y, durante un momento despues de cada corte, combos iguales que el juego
+// haya vuelto a iniciar
+function ProcessCancels()
+{
+    local int i;
+    local xPawn P;
+
+    for (i = CancelPawns.Length - 1; i >= 0; i--)
+    {
+        P = CancelPawns[i];
+        if (P == None || P.bDeleteMe || (CancelTimes[i] > 0 && Level.TimeSeconds - CancelTimes[i] > RestartBlockTime))
+        {
+            CancelPawns.Remove(i, 1);
+            CancelClasses.Remove(i, 1);
+            CancelTimes.Remove(i, 1);
+            continue;
+        }
+        if (P.CurrentCombo == None || P.CurrentCombo.bDeleteMe || P.CurrentCombo.Class != CancelClasses[i])
+        {
+            if (CancelTimes[i] == 0)
+                CancelTimes[i] = Level.TimeSeconds;
+            continue;
+        }
+        // El juego no tiene sonido de fin de combo: el de activacion, mas grave (solo en el corte)
+        if (CancelTimes[i] == 0 && P.CurrentCombo.ActivateSound != None)
+            P.PlaySound(P.CurrentCombo.ActivateSound, SLOT_None, 2 * P.TransientSoundVolume, , , CancelSoundPitch);
+        P.CurrentCombo.Destroy();
+        if (CancelTimes[i] == 0)
+            CancelTimes[i] = Level.TimeSeconds;
+    }
 }
 
 // Inicia el combo como lo hace el juego (mensaje y efecto), sin pedir la adrenalina completa
