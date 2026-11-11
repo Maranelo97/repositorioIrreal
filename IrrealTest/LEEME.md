@@ -20,8 +20,8 @@ Cada comando se puede escribir como `irreal ...` o como `mutate test ...` (por e
 | `irreal kill cthulhu` (o `irreal kill cutulu`) | Mata solo al Rey Cthulhu, como si lo hubiera matado quien escribió el comando (si está vivo): pasan la recompensa y la revivida de un compañero igual que en una partida normal |
 | `irreal cthulhu` (o `irreal cutulu`) | Hace aparecer al Rey Cthulhu ahora |
 | `irreal kayros poco` / `mucho` | Te da Poco o Mucho Kayros hasta la próxima oleada |
-| `irreal ulti 1` / `2` / `3` | Cambia el arma del punto especial de Armas últimas y además te la da (o te la recarga): 1 Redeemer, 2 Ion Painter, 3 Lightning Gun (también acepta `redeemer`, `ion` y `lightning`). Con GIGACHADrenalina activo te da la versión que usa adrenalina. El arma que te da no pasa por Kayros; para probar Kayros, levantarla del punto especial |
-| `irreal adrenalina` / `irreal adrenalina 40` | Pone tu adrenalina en 100, o en el número que se indique (de 0 a 100). Sirve para probar combos y GIGACHADrenalina |
+| `irreal ulti 1` / `2` / `3` | Cambia el arma del punto especial de Murió una banda de gente y además te la da (o te la recarga): 1 Redeemer, 2 Ion Painter, 3 Lightning Gun (también acepta `redeemer`, `ion` y `lightning`). Con GIGACHADrenalina activo te da la versión que usa adrenalina. El arma que te da no pasa por Kayros; para probar Kayros, levantarla del punto especial |
+| `irreal adrenalina` / `irreal adrenalina 40` | Pone tu adrenalina en el máximo (100, o más con los máximos más altos de Control de plagas), o en el número que se indique, hasta ese máximo. Sirve para probar combos y GIGACHADrenalina |
 | `irreal oleada 15` | Entre oleadas, elige cuál es la que viene (de 1 a la final). Durante una oleada no funciona: primero `irreal kill` |
 
 `irreal kayros` e `irreal ulti` se pueden usar durante una oleada (vale hasta que termina) o entre oleadas (vale para la oleada que viene; sin esto, el sorteo al empezar la oleada pisaría la elección).
