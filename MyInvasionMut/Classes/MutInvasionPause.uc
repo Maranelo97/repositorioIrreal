@@ -320,6 +320,41 @@ function EndPause(Invasion InvGame)
     // Inicia la cuenta regresiva (5 segundos por defecto). Invasion empieza la oleada cuando
     // WaveCountDown llega a 1 o menos, asi que con 0 empieza en el siguiente segundo.
     InvGame.WaveCountDown = Clamp(Countdown, 0, 30) + 1;
+    // El "Next wave in..." del locutor, ahora que de verdad viene la oleada
+    Level.Game.BroadcastLocalizedMessage(class'NextWaveAnnouncement');
+}
+
+// Lo que Invasion hace cuando la cuenta del descanso llega a 13, sin el "Next wave in..." (que
+// suena al terminar la pausa): actualiza la oleada que ven los jugadores y revive a los caidos.
+// Asi la pausa puede congelar la cuenta en 14, antes de que suene la voz.
+function ReviveForBreak(Invasion InvGame)
+{
+    local Controller C;
+
+    InvasionGameReplicationInfo(InvGame.GameReplicationInfo).WaveNumber = InvGame.WaveNum;
+    for (C = Level.ControllerList; C != None; C = C.NextController)
+    {
+        if (PlayerController(C) != None && C.Pawn == None && C.PlayerReplicationInfo != None
+            && !C.PlayerReplicationInfo.bOnlySpectator)
+        {
+            // Invasion los pasa a "esperando para jugar" con la cuenta en 14 y los revive un
+            // segundo despues. Aca es en el mismo momento: en la maquina de un jugador conectado,
+            // el estado de espectador ignora ClientRestart y volveria en tercera persona (como
+            // pasaba al revivir con el Rey Cthulhu), asi que se le avisa antes. WaitDelay bloquea
+            // el reinicio hasta 2 s despues de morir.
+            PlayerController(C).GotoState('PlayerWaiting');
+            PlayerController(C).ClientGotoState('PlayerWaiting', '');
+            PlayerController(C).WaitDelay = Level.TimeSeconds;
+            PlayerController(C).SetViewTarget(C);
+        }
+        if (C.PlayerReplicationInfo != None)
+        {
+            C.PlayerReplicationInfo.bOutOfLives = false;
+            C.PlayerReplicationInfo.NumLives = 0;
+            if (C.Pawn == None && !C.PlayerReplicationInfo.bOnlySpectator)
+                C.ServerReStartPlayer();
+        }
+    }
 }
 
 function Mutate(string MutateString, PlayerController Sender)
@@ -379,16 +414,19 @@ function Timer()
             }
         }
         // Cuando la oleada termina (bWaveInProgress pasa a false y no quedan monstruos):
-        // Esperamos a que WaveCountDown pase por 14 (recarga de armas) y 13 (revivir jugadores)
-        // antes de congelar el temporizador en 12.
+        // Invasion recarga las armas con la cuenta en 14 y con 13 revive a los jugadores y hace
+        // sonar "Next wave in...". La pausa congela la cuenta en 14 y hace lo del 13 sin la voz.
+        // Si la cuenta ya paso el 14 (los dos timers no van sincronizados), congela donde este.
         else if (bWaveWasActive && InvGame.NumMonsters <= 0 && !bWaitingForAdmin)
         {
             if (InvGame.WaveNum >= InvGame.FinalWave)
             {
                 bWaveWasActive = false;
             }
-            else if (InvGame.WaveCountDown <= 12)
+            else if (InvGame.WaveCountDown <= 14)
             {
+                if (InvGame.WaveCountDown == 14)
+                    ReviveForBreak(InvGame);
                 bWaveWasActive = false;
                 bWaitingForAdmin = true;
                 InvGame.WaveCountDown = 9999; // Congela el temporizador de la siguiente ronda
