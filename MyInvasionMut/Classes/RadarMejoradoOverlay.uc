@@ -31,6 +31,20 @@ var HudBase.SpriteWidget WaveSlash;    // un escalon de la barra "/" entre la ol
 var HudBase.NumericWidget WaveNumber;  // oleada actual
 var HudBase.NumericWidget WaveFinal;   // oleada final
 var HudBase.DigitSet WaveDigits;       // los mismos numeros que el reloj (DigitsBig)
+// Al cambiar la oleada, el simbolo late y los numeros brillan en dorado un momento
+var int LastWaveSeen;                  // -1 hasta ver la primera (al entrar no late)
+var float PulseStartTime;
+var float PulseDuration;               // cuanto dura todo el efecto
+var int PulseCount;                    // cuantas veces late en ese tiempo
+var float PulseScale;                  // cuanto crece el simbolo en el pico (0.5 = 50% mas)
+var color PulseColor;                  // color de los numeros en el pico
+// Barra de avance debajo de la oleada: fondo oscuro y relleno que sigue a Settings.WaveProgress
+// sin saltos (el servidor la manda una o dos veces por segundo). Con TextureScale 0.25, sus
+// medidas y offsets estan en cuartos de las unidades del HUD.
+var HudBase.SpriteWidget WaveBarBack, WaveBarFill;
+var int WaveBarWidth;                  // ancho del relleno completo, en pixeles de su "textura"
+var float ShownProgress, LastBarTime;
+var color BarColor;
 var bool bHidTimer;                    // si este overlay apago el reloj del HUD
 var int DigitAdvance;                  // ancho de un numero, en las unidades de OffsetX de los numeros
 
@@ -220,6 +234,8 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
 {
     local InvasionGameReplicationInfo GRI;
     local int Wave, Digits;
+    local float Pulse, Scale;
+    local color NumberColor, SymbolColor, SlashGold;
 
     if (H.PlayerOwner == None)
         return;
@@ -227,6 +243,10 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
     if (GRI == None)
         return;
     Wave = GRI.WaveNumber + 1;
+    if (LastWaveSeen >= 0 && Wave != LastWaveSeen)
+        PulseStartTime = Level.TimeSeconds;
+    LastWaveSeen = Wave;
+    Pulse = WavePulse();
 
     // Se carga por nombre la primera vez, asi el paquete no depende de la textura al compilar
     if (WaveIcon == None)
@@ -236,12 +256,30 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
     H.DrawSpriteWidget(C, WaveDisc);
     if (WaveIcon != None)
     {
+        // El simbolo crece desde su centro: los offsets se multiplican por TextureScale, asi que
+        // se corrigen para que el centro quede en el mismo lugar
+        Scale = default.WaveSymbol.TextureScale * (1.0 + PulseScale * Pulse);
+        WaveSymbol.TextureScale = Scale;
+        WaveSymbol.OffsetX = (default.WaveSymbol.OffsetX + 128) * default.WaveSymbol.TextureScale / Scale - 128;
+        WaveSymbol.OffsetY = (default.WaveSymbol.OffsetY + 128) * default.WaveSymbol.TextureScale / Scale - 128;
+        SymbolColor = MixColor(default.WaveSymbol.Tints[0], PulseColor, Pulse);
+        WaveSymbol.Tints[0] = SymbolColor;
+        WaveSymbol.Tints[1] = SymbolColor;
         WaveSymbol.WidgetTexture = WaveIcon;
         H.DrawSpriteWidget(C, WaveSymbol);
     }
 
+    NumberColor = MixColor(default.WaveNumber.Tints[0], PulseColor, Pulse);
+    WaveNumber.Tints[0] = NumberColor;
+    WaveNumber.Tints[1] = NumberColor;
+    WaveFinal.Tints[0] = NumberColor;
+    WaveFinal.Tints[1] = NumberColor;
+
     WaveNumber.Value = Wave;
     H.DrawNumericWidget(C, WaveNumber, WaveDigits);
+
+    if (Settings.bShowWaveProgress)
+        DrawWaveBar(C, H);
 
     // La barra y la oleada final van despues de los numeros de la actual (1 o 2 cifras)
     if (Settings.FinalWave > 0)
@@ -249,11 +287,69 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
         Digits = 1;
         if (Wave >= 10)
             Digits = 2;
+        // La barra es blanca con tinte gris; para que brille igual que los numeros (textura gris
+        // con tinte), el dorado se oscurece en la misma proporcion
+        SlashGold.R = PulseColor.R * default.WaveSlash.Tints[0].R / 255;
+        SlashGold.G = PulseColor.G * default.WaveSlash.Tints[0].G / 255;
+        SlashGold.B = PulseColor.B * default.WaveSlash.Tints[0].B / 255;
+        SlashGold.A = 255;
+        WaveSlash.Tints[0] = MixColor(default.WaveSlash.Tints[0], SlashGold, Pulse);
+        WaveSlash.Tints[1] = WaveSlash.Tints[0];
         DrawSlash(C, H, WaveNumber.OffsetX + DigitAdvance * Digits);
         WaveFinal.OffsetX = WaveNumber.OffsetX + DigitAdvance * (Digits + 1);
         WaveFinal.Value = Settings.FinalWave;
         H.DrawNumericWidget(C, WaveFinal, WaveDigits);
     }
+}
+
+// Barra que se llena con el avance de la oleada. Si el avance baja (empezo otra oleada) va
+// directo; si sube, se acerca de a poco. Llena, se ve dorada.
+simulated function DrawWaveBar(Canvas C, HUDInvasion H)
+{
+    local float Target, DT;
+
+    Target = float(Settings.WaveProgress) / 255.0;
+    DT = FClamp(Level.TimeSeconds - LastBarTime, 0.0, 0.5);
+    LastBarTime = Level.TimeSeconds;
+    if (Target < ShownProgress)
+        ShownProgress = Target;
+    else
+        ShownProgress += (Target - ShownProgress) * FMin(1.0, DT * 2.0);
+
+    H.DrawSpriteWidget(C, WaveBarBack);
+    WaveBarFill.TextureCoords.X2 = int(WaveBarWidth * ShownProgress);
+    if (WaveBarFill.TextureCoords.X2 <= 0)
+        return;
+    if (ShownProgress >= 0.995)
+        WaveBarFill.Tints[0] = MixColor(BarColor, PulseColor, 1.0);
+    else
+        WaveBarFill.Tints[0] = BarColor;
+    WaveBarFill.Tints[1] = WaveBarFill.Tints[0];
+    H.DrawSpriteWidget(C, WaveBarFill);
+}
+
+// 0 sin efecto, 1 en el pico. Late PulseCount veces en PulseDuration segundos (subida y bajada).
+simulated function float WavePulse()
+{
+    local float T, Phase;
+
+    T = Level.TimeSeconds - PulseStartTime;
+    if (PulseStartTime <= 0 || T < 0 || T >= PulseDuration)
+        return 0.0;
+    Phase = (T / PulseDuration) * PulseCount;
+    Phase = Phase - int(Phase);
+    return 1.0 - Abs(2.0 * Phase - 1.0);
+}
+
+simulated function color MixColor(color A, color B, float Alpha)
+{
+    local color Result;
+
+    Result.R = A.R + (B.R - A.R) * Alpha;
+    Result.G = A.G + (B.G - A.G) * Alpha;
+    Result.B = A.B + (B.B - A.B) * Alpha;
+    Result.A = A.A + (B.A - A.A) * Alpha;
+    return Result;
 }
 
 // Los numeros del reloj no traen "/", asi que la barra se arma con escalones: cuadraditos
@@ -292,6 +388,15 @@ defaultproperties
     WaveFinal=(RenderStyle=STY_Alpha,MinDigitCount=1,TextureScale=0.32,DrawPivot=DP_MiddleLeft,OffsetY=45,Tints[0]=(R=255,G=255,B=255,A=255),Tints[1]=(R=255,G=255,B=255,A=255))
     WaveDigits=(DigitTexture=Texture'HUDContent.Generic.HUD',TextureCoords[0]=(X2=38,Y2=38),TextureCoords[1]=(X1=39,X2=77,Y2=38),TextureCoords[2]=(X1=78,X2=116,Y2=38),TextureCoords[3]=(X1=117,X2=155,Y2=38),TextureCoords[4]=(X1=156,X2=194,Y2=38),TextureCoords[5]=(X1=195,X2=233,Y2=38),TextureCoords[6]=(X1=234,X2=272,Y2=38),TextureCoords[7]=(X1=273,X2=311,Y2=38),TextureCoords[8]=(X1=312,X2=350,Y2=38),TextureCoords[9]=(X1=351,X2=389,Y2=38),TextureCoords[10]=(X1=390,X2=428,Y2=38))
     DigitAdvance=39
+    LastWaveSeen=-1
+    WaveBarBack=(WidgetTexture=Texture'Engine.WhiteTexture',RenderStyle=STY_Alpha,TextureCoords=(X2=240,Y2=16),TextureScale=0.25,OffsetX=116,OffsetY=102,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=0,G=0,B=0,A=150),Tints[1]=(R=0,G=0,B=0,A=150))
+    WaveBarFill=(WidgetTexture=Texture'Engine.WhiteTexture',RenderStyle=STY_Alpha,TextureCoords=(X2=232,Y2=8),TextureScale=0.25,OffsetX=120,OffsetY=106,ScaleMode=SM_Right,Scale=1.0,Tints[0]=(R=180,G=180,B=188,A=255),Tints[1]=(R=180,G=180,B=188,A=255))
+    WaveBarWidth=232
+    BarColor=(R=180,G=180,B=188,A=255)
+    PulseDuration=1.2
+    PulseCount=2
+    PulseScale=0.5
+    PulseColor=(R=255,G=210,B=80,A=255)
     bHidden=True
     RemoteRole=ROLE_None
 }
