@@ -504,5 +504,5 @@ defaultproperties
     CountdownDesc="Segundos que tarda en empezar la oleada despues de usar 'mutate nextwave' (de 0 a 30, 0 = enseguida) [por defecto: 5]"
     GroupName="InvasionPause"
     FriendlyName="[Irreal] Control de plagas FV"
-    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave). Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.2)"
+    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave). Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.3)"
 }

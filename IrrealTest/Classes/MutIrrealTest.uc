@@ -443,5 +443,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.2)"
+    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.3)"
 }
