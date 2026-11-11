@@ -94,15 +94,16 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         ShowHelp(Sender);
 }
 
-// Pone la adrenalina en el valor pedido (100 si no se indica), para probar combos y GIGACHADrenalina
+// Pone la adrenalina en el valor pedido (el maximo si no se indica), para probar combos y
+// GIGACHADrenalina. El maximo es 100, o mas con los maximos mas altos de Control de plagas.
 function SetAdrenaline(string Arg, PlayerController Sender)
 {
     local int Amount;
 
-    Amount = 100;
+    Amount = int(Sender.AdrenalineMax);
     if (Arg != "")
-        Amount = Clamp(int(Arg), 0, 100);
-    Sender.Adrenaline = Min(Amount, Sender.AdrenalineMax);
+        Amount = Clamp(int(Arg), 0, int(Sender.AdrenalineMax));
+    Sender.Adrenaline = Amount;
     Sender.ClientMessage("Prueba: adrenalina en " $ int(Sender.Adrenaline) $ ".");
 }
 
@@ -114,7 +115,7 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
     Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
-    Sender.ClientMessage("  irreal adrenalina [0-100] - pone tu adrenalina en ese valor (100 si no se indica)");
+    Sender.ClientMessage("  irreal adrenalina [N] - pone tu adrenalina en N (el maximo si no se indica: 100, o mas con los maximos mas altos)");
     Sender.ClientMessage("  irreal oleada N - entre oleadas, elige cual es la que viene (de 1 a la final)");
 }
 
@@ -442,5 +443,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.2)"
+    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.3)"
 }

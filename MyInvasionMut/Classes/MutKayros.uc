@@ -244,5 +244,5 @@ defaultproperties
     DamageReceivedDesc="Cuanto menos dano recibe el jugador con Mucho Kayros, y cuanto mas con Poco Kayros, en porcentaje (de 0 a 90) [por defecto: 30]"
     GroupName="KayrosMut"
     FriendlyName="[Irreal] Poco o mucho Kayros?"
-    Description="En cada oleada elige a 1 jugador humano al azar y le da Mucho Kayros (hace 30% mas de dano y recibe 30% menos) o Poco Kayros (hace 30% menos de dano y recibe 30% mas). Los porcentajes se cambian en Configurar mutadores. (Ver 1.4.2)"
+    Description="En cada oleada elige a 1 jugador humano al azar y le da Mucho Kayros (hace 30% mas de dano y recibe 30% menos) o Poco Kayros (hace 30% menos de dano y recibe 30% mas). Los porcentajes se cambian en Configurar mutadores. (Ver 1.4.3)"
 }
