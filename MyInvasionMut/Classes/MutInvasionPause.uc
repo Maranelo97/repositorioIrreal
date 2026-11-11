@@ -16,6 +16,7 @@ var localized string LateBoostPercentText, LateBoostPercentDesc;
 // Maximos mas altos en las ultimas oleadas. La municion maxima es de la clase de municion (igual
 // para todos), asi que se cambia el valor por defecto de cada clase y se devuelve al cambiar de mapa.
 var bool bLateBoostActive;
+var LateBoostInfo BoostInfo;
 var array< class<Ammunition> > BoostedAmmo;
 var array<int> BoostedAmmoOriginal;
 
@@ -248,6 +249,11 @@ function StartLateBoost()
     local string Amount;
 
     bLateBoostActive = true;
+    // Para que el HUD de cada jugador muestre el escudo y la adrenalina por encima de 150 y 100
+    if (BoostInfo == None)
+        BoostInfo = Spawn(class'LateBoostInfo');
+    if (BoostInfo != None)
+        BoostInfo.Factor = LateBoostFactor();
     for (C = Level.ControllerList; C != None; C = C.NextController)
         if (C.bIsPlayer && C.Pawn != None && C.Pawn.Health > 0)
             BoostPawn(C.Pawn, true);
