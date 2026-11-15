@@ -13,7 +13,7 @@ simulated function PostBeginPlay()
 {
     Super.PostBeginPlay();
     if (Role == ROLE_Authority)
-        ShotCost = Clamp(class'MutGigachadrenalina'.default.RedeemerCost, 0, 100);
+        ShotCost = Clamp(class'MutInvasionUltimates'.default.RedeemerCost, 0, 100);
 }
 
 // Al agarrar el arma (si no la tenias) se llena la adrenalina, segun la opcion del mutador

@@ -24,6 +24,7 @@ function AnnouncePickup(Pawn Receiver)
 
 defaultproperties
 {
+    InventoryType=Class'UltiLightningGun'
     bInstantRespawn=True
     RespawnTime=0.05
     RespawnEffectTime=0.0

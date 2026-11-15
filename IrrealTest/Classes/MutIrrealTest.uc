@@ -360,7 +360,7 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     {
         WeaponIndex = 2;
         WeaponName = "Lightning Gun";
-        WeaponClassName = "XWeapons.SniperRifle";
+        WeaponClassName = "MyInvasionMut.UltiLightningGun";
     }
     else
     {
@@ -373,6 +373,11 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     if (UltMut == None)
     {
         Sender.ClientMessage("Murio una banda de gente no esta activo.");
+        return;
+    }
+    if (UltMut.bNoSpecialSpot)
+    {
+        Sender.ClientMessage("Este mapa ya tiene las armas ultimas que se pueden repartir: no hay punto especial.");
         return;
     }
     if (UltMut.UltimateBase == None)
@@ -395,10 +400,10 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
 
 function bool IsGigachadrenalinaActive()
 {
-    local MutGigachadrenalina M;
+    local MutInvasionUltimates M;
 
-    // Activo y con la opcion de armas ultimas con adrenalina encendida
-    foreach DynamicActors(class'MyInvasionMut.MutGigachadrenalina', M)
+    // Murio una banda de gente activo y con la opcion de armas ultimas con adrenalina encendida
+    foreach DynamicActors(class'MyInvasionMut.MutInvasionUltimates', M)
         return M.bAdrenalineUltimates;
     return false;
 }
@@ -419,9 +424,9 @@ function GiveTestWeapon(PlayerController Sender, string WeaponClassName, string 
         return;
 
     // Con GIGACHADrenalina activo, dar la version que usa adrenalina (como la del punto especial)
-    if (IsGigachadrenalinaActive() && class'MyInvasionMut.MutGigachadrenalina'.static.GigaWeaponFor(WeaponClass) != None)
+    if (IsGigachadrenalinaActive() && class'MyInvasionMut.MutInvasionUltimates'.static.GigaWeaponFor(WeaponClass) != None)
     {
-        WeaponClass = class<Weapon>(class'MyInvasionMut.MutGigachadrenalina'.static.GigaWeaponFor(WeaponClass));
+        WeaponClass = class<Weapon>(class'MyInvasionMut.MutInvasionUltimates'.static.GigaWeaponFor(WeaponClass));
         WeaponClassName = string(WeaponClass);
     }
 

@@ -25,7 +25,7 @@ static function int MaxShots(int Cost)
 // Llena la adrenalina de quien agarro un arma ultima (opcion bFillAdrenalineOnPickup)
 static function FillOnPickup(Pawn P)
 {
-    if (!class'MutGigachadrenalina'.default.bFillAdrenalineOnPickup)
+    if (!class'MutInvasionUltimates'.default.bFillAdrenalineOnPickup)
         return;
     if (P == None || P.Controller == None || !P.Controller.bAdrenalineEnabled)
         return;

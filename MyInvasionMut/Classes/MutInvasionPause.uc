@@ -212,7 +212,7 @@ function BoostPawnAmmo(Pawn P, bool bFill)
     for (Inv = P.Inventory; Inv != None; Inv = Inv.Inventory)
     {
         W = Weapon(Inv);
-        if (W == None || class'MutGigachadrenalina'.static.IsAdrenalineWeapon(W.Class))
+        if (W == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(W.Class))
             continue;
         BoostAmmoClass(W.AmmoClass[0]);
         BoostAmmoClass(W.AmmoClass[1]);
@@ -275,7 +275,7 @@ function BoostPickup(Pickup PU)
         // (AmmoAmount, por ejemplo un arma tirada): en ese caso se respeta la que trae
         WP = WeaponPickup(PU);
         WC = class<Weapon>(WP.InventoryType);
-        if (WC == None || class'MutGigachadrenalina'.static.IsAdrenalineWeapon(WC) || WP.AmmoAmount[0] > 0 || WP.AmmoAmount[1] > 0)
+        if (WC == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(WC) || WP.AmmoAmount[0] > 0 || WP.AmmoAmount[1] > 0)
             return;
         if (MutInvasionRedeemerPickup(WP) != None || MutInvasionIonPainterPickup(WP) != None || MutInvasionLightningGunPickup(WP) != None)
             return;
