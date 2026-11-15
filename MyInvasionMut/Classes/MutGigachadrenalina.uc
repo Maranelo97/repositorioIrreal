@@ -354,5 +354,5 @@ defaultproperties
     InfiniteAdrenalineDesc="La adrenalina de los jugadores (no la de los bots) siempre esta llena: los combos no se terminan solos y, con las armas ultimas con adrenalina, disparar no gasta [por defecto: desactivada]"
     GroupName="Gigachadrenalina"
     FriendlyName="[Irreal] GIGACHADrenalina"
-    Description="Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 1.4.3)"
+    Description="Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 1.4.4)"
 }
