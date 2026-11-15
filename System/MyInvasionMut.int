@@ -16,12 +16,12 @@ SpeedBonusDesc="Cuánto más rápido se mueven los jugadores mientras esperan la si
 CountdownText="Cuenta regresiva (segundos)"
 CountdownDesc="Segundos que tarda en empezar la oleada después de usar 'mutate nextwave' (de 0 a 30, 0 = enseguida) [por defecto: 5]"
 LateBoostText="Máximos más altos en las últimas oleadas"
-LateBoostDesc="Desde la oleada elegida (15 por defecto), la vida, el escudo, la munición y la adrenalina máximas de los jugadores y los bots suben (al doble por defecto), y en el descanso antes de esa oleada se llenan [por defecto: activada]"
+LateBoostDesc="Desde la oleada elegida (15 por defecto), la vida, el escudo, la munición y la adrenalina máximas de los jugadores y los bots suben (al doble por defecto), y en el descanso antes de esa oleada se llenan. Lo que dan los pickups de vida, escudo, adrenalina y munición, y la munición con la que vienen las armas, sube igual [por defecto: activada]"
 LateBoostWaveText="Oleada de los máximos más altos"
 LateBoostWaveDesc="Primera oleada en la que suben los máximos (de 1 a 99) [por defecto: 15]"
 LateBoostPercentText="Aumento de los máximos (%)"
 LateBoostPercentDesc="Cuánto suben la vida, el escudo, la munición y la adrenalina máximas: 100 es el doble (de 1 a 300) [por defecto: 100]"
-Description="Pausa el inicio de la siguiente oleada en Invasión y otorga +50% de velocidad durante la pausa para recolectar ítems. El host o un admin inicia la oleada con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave). Desde el descanso antes de la oleada 15, la vida, el escudo, la munición y la adrenalina máximas son el doble, y en ese momento se llenan. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.3)"
+Description="Pausa el inicio de la siguiente oleada en Invasión y otorga +50% de velocidad durante la pausa para recolectar ítems. El host o un admin inicia la oleada con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave). Desde el descanso antes de la oleada 15, la vida, el escudo, la munición y la adrenalina máximas son el doble, y en ese momento se llenan. Lo que dan los pickups también es el doble. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.3)"
 
 [MutInstantRespawn]
 FriendlyName="[Irreal] Es todo muy irreal"
