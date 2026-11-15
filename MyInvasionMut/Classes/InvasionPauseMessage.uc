@@ -2,7 +2,7 @@ class InvasionPauseMessage extends LocalMessage;
 
 // Linea fija durante la pausa con la tecla para iniciar la siguiente oleada.
 // El texto se arma en la maquina de cada jugador, porque las teclas asignadas solo
-// se conocen ahi: muestra la tecla que ese jugador tiene para 'mutate nextwave'.
+// se conocen ahi: muestra H, o el comando si ese jugador tiene H asignada a otra cosa.
 // Switch 0 la muestra y Switch 1 la saca (MutInvasionPause lo manda al terminar la pausa).
 static function ClientReceive(
     PlayerController P,
@@ -12,7 +12,7 @@ static function ClientReceive(
     optional Object OptionalObject
 )
 {
-    local string Key, Text;
+    local string Text;
 
     if (P == None || P.myHUD == None)
         return;
@@ -24,12 +24,11 @@ static function ClientReceive(
     }
     else
     {
-        // Devuelve el mismo comando si no hay ninguna tecla asignada
-        Key = class'GameInfo'.static.GetKeyBindName("mutate nextwave", P);
-        if (Key == "" || Key ~= "mutate nextwave")
-            Text = "Siguiente oleada: escribir mutate nextwave en la consola";
+        // H manda el comando (NextWaveKeyInteraction) mientras no tenga otra asignacion
+        if (P.ConsoleCommand("KEYBINDING H") == "")
+            Text = "H: siguiente oleada";
         else
-            Text = Key $ ": siguiente oleada";
+            Text = "Siguiente oleada: escribir mutate nextwave en la consola";
     }
 
     P.myHUD.LocalizedMessage(default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject, Text);
