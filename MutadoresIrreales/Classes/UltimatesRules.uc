@@ -1,6 +1,6 @@
 class UltimatesRules extends GameRules;
 
-var MutInvasionUltimates UltimatesMut;
+var MutMurioUnaBandaDeGente UltimatesMut;
 
 // Quienes ya recogieron cada arma ultima en esta oleada, y cual (se usa cuando la opcion de
 // recogerla varias veces por oleada esta desactivada). Es por arma: el mapa puede tener las suyas.
@@ -29,7 +29,7 @@ function bool HasPickedUp(Controller C, class<Pickup> PickupClass)
 // Opcion "Los bots pueden recoger las armas ultimas" (la usan tambien las armas del punto)
 static function bool BotsCanPickup()
 {
-    return class'MutInvasionUltimates'.default.bBotsCanPickup;
+    return class'MutMurioUnaBandaDeGente'.default.bBotsCanPickup;
 }
 
 // La llaman las armas del punto especial cuando alguien las recoge de verdad

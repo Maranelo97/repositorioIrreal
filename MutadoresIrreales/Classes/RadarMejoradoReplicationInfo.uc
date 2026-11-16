@@ -5,7 +5,8 @@ class RadarMejoradoReplicationInfo extends ReplicationInfo;
 
 var bool bColoredDots, bShowHeightLines, bShowWave;
 var bool bShowWaveProgress;
-var byte WaveProgress;  // avance de la oleada, de 0 a 255 (lo calcula MutRadarMejorado)
+var bool bShowCombo;    // nombre del combo activo debajo de la adrenalina
+var byte WaveProgress;  // avance de la oleada, de 0 a 255 (lo calcula MutSiganViendo)
 var byte FinalWave;   // Invasion no se la manda a los jugadores; la oleada actual si
 var float MinHeightDiff;
 var RadarMejoradoOverlay Overlay;
@@ -13,7 +14,7 @@ var RadarMejoradoOverlay Overlay;
 replication
 {
     reliable if (Role == ROLE_Authority)
-        bColoredDots, bShowHeightLines, MinHeightDiff, bShowWave, FinalWave, bShowWaveProgress, WaveProgress;
+        bColoredDots, bShowHeightLines, MinHeightDiff, bShowWave, FinalWave, bShowWaveProgress, WaveProgress, bShowCombo;
 }
 
 simulated function Tick(float DeltaTime)

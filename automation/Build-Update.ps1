@@ -12,9 +12,9 @@ if ((Test-Path -LiteralPath $OutputPath) -and @(Get-ChildItem -LiteralPath $Outp
     throw 'Usar una carpeta de salida vacia; no se borran salidas anteriores.'
 }
 foreach ($extension in @('u', 'ucl', 'int', 'est')) {
-    $required = Join-Path $SourcePath "System/MyInvasionMut.$extension"
+    $required = Join-Path $SourcePath "System/MutadoresIrreales.$extension"
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
-        throw "Falta System/MyInvasionMut.$extension. Subir los compilados antes de publicar."
+        throw "Falta System/MutadoresIrreales.$extension. Subir los compilados antes de publicar."
     }
 }
 $files = @()

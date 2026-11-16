@@ -3,7 +3,7 @@ class InvasionPauseMessage extends LocalMessage;
 // Linea fija durante la pausa con la tecla para iniciar la siguiente oleada.
 // El texto se arma en la maquina de cada jugador, porque las teclas asignadas solo
 // se conocen ahi: muestra H, o el comando si ese jugador tiene H asignada a otra cosa.
-// Switch 0 la muestra y Switch 1 la saca (MutInvasionPause lo manda al terminar la pausa).
+// Switch 0 la muestra y Switch 1 la saca (MutControlDePlagas lo manda al terminar la pausa).
 static function ClientReceive(
     PlayerController P,
     optional int Switch,

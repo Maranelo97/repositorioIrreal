@@ -8,6 +8,11 @@
 // configuracion. (aForward/aStrafe no sirven aca: el juego los vuelve a cero en cada cuadro
 // antes de que corra la interaccion.) El armado de la secuencia es el de xPlayer.PlayerTick.
 //
+// La tecla R corta el combo activo (opcion "Cortar el combo"), si sigue asignada a TeamTalk (lo que
+// trae el juego) o a nada: la tecla se consume, asi que no abre el chat de equipo (para hablar
+// esta la T). El servidor decide si hay un combo para cortar. Mientras se escribe en el chat o hay
+// un menu abierto, la consola o el menu reciben la tecla antes y no llega aca.
+//
 // Tambien maneja el ascenso y descenso del combo Vuelo: el modo de vuelo del juego ignora
 // saltar y agacharse, asi que mientras se vuela, saltar sube y agacharse baja. Se aplica
 // aca (para que responda enseguida) y se le avisa al servidor, donde ComboVuelo hace lo mismo.
@@ -33,6 +38,7 @@ var byte KeyChecked[256];  // 1 si ya se pregunto a que esta asignada
 var byte KeyHeld[256];     // 1 mientras la tecla esta apretada (para ignorar la repeticion automatica)
 var bool bFlyUpHeld, bFlyDownHeld;
 var int SentVertical;      // ultimo valor de subir/bajar avisado al servidor
+var GigaReplicationInfo GigaRI;
 
 // Direccion de combo de la tecla (0 si no mueve), preguntando su asignacion una sola vez
 function int DirectionOf(int KeyCode, PlayerController PC)
@@ -79,6 +85,22 @@ function bool KeyEvent(out EInputKey Key, out EInputAction Action, float Delta)
     // Al mantener una tecla, Windows repite el evento de apretar: solo cuenta la primera vez,
     // como en xPlayer (que solo cuenta las teclas que pasan de sueltas a apretadas)
     PC = xPlayer(ViewportOwner.Actor);
+
+    // Tecla R: corta el combo (tambien se consume al mantenerla, para que no abra el chat)
+    if (Key == IK_R && PC != None && CancelKeyEnabled(PC))
+    {
+        if (Action == IST_Press)
+        {
+            if (KeyHeld[int(Key)] == 0 && PC.Pawn != None)
+                PC.Mutate("gigacancel");
+            KeyHeld[int(Key)] = 1;
+            return true;
+        }
+        if (Action == IST_Release)
+            KeyHeld[int(Key)] = 0;
+        return false;
+    }
+
     if (Action == IST_Release)
     {
         KeyHeld[int(Key)] = 0;
@@ -108,6 +130,20 @@ function bool KeyEvent(out EInputKey Key, out EInputAction Action, float Delta)
         AddKey(Dir, PC);
     UpdateVertical(PC);
     return false;   // la tecla sigue su camino normal
+}
+
+// Si la tecla R corta combos: la opcion esta activa en el servidor y el jugador no le puso otro comando
+function bool CancelKeyEnabled(PlayerController PC)
+{
+    local string Binding;
+
+    if (GigaRI == None)
+        foreach PC.DynamicActors(class'GigaReplicationInfo', GigaRI)
+            break;
+    if (GigaRI == None || !GigaRI.bCancelKey)
+        return false;
+    Binding = Caps(PC.ConsoleCommand("KEYBINDING R"));
+    return Binding == "" || InStr(Binding, "TEAMTALK") >= 0;
 }
 
 // Subir (1), bajar (-1) o nada (0) segun las teclas apretadas, solo mientras se vuela

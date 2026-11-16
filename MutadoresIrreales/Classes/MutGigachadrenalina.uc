@@ -3,7 +3,7 @@ class MutGigachadrenalina extends Mutator;
 // Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
 var config bool bFlightCombo;             // combo Vuelo
 var config bool bVisionCombo;             // combo Vision
-var config bool bCancelCombos;            // cortar el combo activo repitiendo sus teclas
+var config bool bCancelCombos;            // cortar el combo activo con R o repitiendo sus teclas
 var config bool bLowAdrenalineCombos;     // combos con menos de 100 de adrenalina (duran menos), y con un
                                           // combo activo, marcar otro cambia a ese con la que queda
 var config bool bInfiniteAdrenaline;      // la adrenalina de los jugadores siempre esta llena
@@ -48,8 +48,7 @@ function PostBeginPlay()
 
     Super.PostBeginPlay();
 
-    // Adrenalina por pastilla: se cambia el valor por defecto de la clase (Poco o mucho Kayros
-    // calcula cada pastilla a partir de ese valor, asi las dos cosas se combinan) y el de las
+    // Adrenalina por pastilla: se cambia el valor por defecto de la clase y el de las
     // pastillas que ya estan en el mapa. Se devuelve el original en ServerTraveling.
     if (float(Clamp(AdrenalinePillAmount, 1, 100)) != class'XPickups.AdrenalinePickup'.default.AdrenalineAmount)
     {
@@ -61,7 +60,10 @@ function PostBeginPlay()
     }
     RI = Spawn(class'GigaReplicationInfo');
     if (RI != None)
+    {
         RI.bComboKeys = bCancelCombos || bFlightCombo || bLowAdrenalineCombos;
+        RI.bCancelKey = bCancelCombos;
+    }
 }
 
 // Al cambiar de mapa se devuelve el valor original de las pastillas, por si la proxima partida
@@ -188,6 +190,19 @@ function Mutate(string MutateString, PlayerController Sender)
         && ComboVuelo(xPawn(Sender.Pawn).CurrentCombo) != None)
         ComboVuelo(xPawn(Sender.Pawn).CurrentCombo).VerticalInput = Clamp(int(Mid(MutateString, 8)), -1, 1);
 
+    // "mutate gigacancel": la tecla R (GigaComboInteraction) corta el combo activo, igual que
+    // repetir sus teclas (te queda la adrenalina que sobraba)
+    if (Sender != None && MutateString ~= "gigacancel" && bCancelCombos)
+    {
+        P = xPawn(Sender.Pawn);
+        if (P != None && P.CurrentCombo != None)
+        {
+            i = ComboIndex(P.CurrentCombo);
+            if (AllowedCombo(P.CurrentCombo.Class) && i >= 0 && Level.TimeSeconds - TrackedTimes[i] >= MinComboAgeToCancel)
+                QueueCancel(P, P.CurrentCombo.Class);
+        }
+    }
+
     if (Sender != None && Left(MutateString, 10) ~= "gigacombo ")
     {
         P = xPawn(Sender.Pawn);
@@ -290,9 +305,9 @@ function ModifyPlayer(Pawn Other)
     if (PC != None)
     {
         if (bFlightCombo)
-            PC.ClientReceiveCombo("MyInvasionMut.ComboVuelo");
+            PC.ClientReceiveCombo("MutadoresIrreales.ComboVuelo");
         if (bVisionCombo)
-            PC.ClientReceiveCombo("MyInvasionMut.ComboVision");
+            PC.ClientReceiveCombo("MutadoresIrreales.ComboVision");
     }
     Super.ModifyPlayer(Other);
 }
@@ -305,9 +320,9 @@ static function FillPlayInfo(PlayInfo PlayInfo)
     PlayInfo.AddSetting(default.RulesGroup, "AdrenalinePillAmount", default.AdrenalinePillAmountText, 0, 2, "Text", "3;1:100", , , True);
     PlayInfo.AddSetting(default.RulesGroup, "bFlightCombo", default.FlightComboText, 0, 3, "Check");
     PlayInfo.AddSetting(default.RulesGroup, "bVisionCombo", default.VisionComboText, 0, 4, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "ComboDrainPercent", default.ComboDrainPercentText, 0, 5, "Text", "3;0:400", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bCancelCombos", default.CancelCombosText, 0, 6, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bLowAdrenalineCombos", default.LowAdrenalineCombosText, 0, 7, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "ComboDrainPercent", default.ComboDrainPercentText, 0, 7, "Text", "3;0:400", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bCancelCombos", default.CancelCombosText, 0, 5, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bLowAdrenalineCombos", default.LowAdrenalineCombosText, 0, 6, "Check");
 }
 
 static event string GetDescriptionText(string PropName)
@@ -338,8 +353,8 @@ defaultproperties
     VisionComboText="Combo Vision"
     VisionComboDesc="Cuatro veces izquierda: durante 30 segundos (con el gasto normal) quedan marcados a traves de las paredes los monstruos (amarillo), los otros jugadores (verde), el Rey Cthulhu (rojo) y los pickups importantes que podes agarrar (blanco). Los marcos se llenan segun la vida que les queda; el de los jugadores muestra la vida a la izquierda y el escudo a la derecha [por defecto: activada]"
     bCancelCombos=True
-    CancelCombosText="Cortar el combo repitiendo las teclas"
-    CancelCombosDesc="Si repetis las teclas del combo que tenes activo, se corta y te queda la adrenalina que sobraba. Vale para todos los combos [por defecto: activada]"
+    CancelCombosText="Cortar el combo con R o repitiendo las teclas"
+    CancelCombosDesc="Con la tecla R, o repitiendo las teclas del combo que tenes activo, se corta y te queda la adrenalina que sobraba. Vale para todos los combos. La R deja de abrir el chat de equipo (para hablar esta la T), salvo que le hayas asignado otro comando [por defecto: activada]"
     bLowAdrenalineCombos=True
     LowAdrenalineCombosText="Combos con menos de 100 de adrenalina"
     LowAdrenalineCombosDesc="Se puede hacer un combo con la adrenalina que tengas, aunque no llegue a 100: dura menos, en proporcion (con 50, la mitad). Ademas, con un combo activo, si marcas las teclas de otro combo cambias a ese, con la adrenalina que te quedaba. Vale para todos los combos [por defecto: activada]"
@@ -354,5 +369,5 @@ defaultproperties
     InfiniteAdrenalineDesc="La adrenalina de los jugadores (no la de los bots) siempre esta llena: los combos no se terminan solos y, con las armas ultimas con adrenalina, disparar no gasta [por defecto: desactivada]"
     GroupName="Gigachadrenalina"
     FriendlyName="[Irreal] GIGACHADrenalina"
-    Description="Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 1.4.4)"
+    Description="Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 2.0)"
 }

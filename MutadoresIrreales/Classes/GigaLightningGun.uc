@@ -1,7 +1,6 @@
-// Ion Painter de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina).
-// El Ion Painter original no cobra en ConsumeAmmo sino en ReallyConsumeAmmo, cuando el
-// canon de iones realmente dispara, asi que se cobra ahi.
-class GigaIonPainter extends Painter;
+// Lightning Gun de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina).
+// El zoom (disparo secundario) no gasta nada. Hereda el rayo en cadena de UltiLightningGun.
+class GigaLightningGun extends UltiLightningGun;
 
 var int ShotCost;   // adrenalina por disparo; la decide el servidor
 
@@ -15,7 +14,7 @@ simulated function PostBeginPlay()
 {
     Super.PostBeginPlay();
     if (Role == ROLE_Authority)
-        ShotCost = Clamp(class'MutInvasionUltimates'.default.IonPainterCost, 0, 100);
+        ShotCost = Clamp(class'MutMurioUnaBandaDeGente'.default.LightningGunCost, 0, 100);
 }
 
 // Al agarrar el arma (si no la tenias) se llena la adrenalina, segun la opcion del mutador
@@ -52,9 +51,9 @@ simulated function bool HasAmmo()
     return AmmoAmount(0) > 0;
 }
 
-function ReallyConsumeAmmo(int Mode, float Load)
+simulated function bool ConsumeAmmo(int Mode, float Load, optional bool bAmountNeededIsMax)
 {
-    class'GigaAdrenalina'.static.Spend(self, ShotCost, Load);
+    return class'GigaAdrenalina'.static.Spend(self, ShotCost, Load);
 }
 
 // No hay municion para recargar: volver a agarrar el arma no da nada
@@ -76,5 +75,5 @@ simulated function float AmmoStatus(optional int Mode)
 
 defaultproperties
 {
-    ShotCost=25
+    ShotCost=5
 }

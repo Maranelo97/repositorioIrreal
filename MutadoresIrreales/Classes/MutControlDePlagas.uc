@@ -1,4 +1,4 @@
-class MutInvasionPause extends Mutator;
+class MutControlDePlagas extends Mutator;
 
 // Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
 var config int SpeedBonus;   // % de velocidad extra durante la pausa
@@ -69,7 +69,9 @@ function bool IsHostOrAdmin(PlayerController PC)
     return false;
 }
 
-function NotifyHostOrAdmin(string Msg)
+// Aviso grande en el centro de la pantalla para todos los jugadores (oleada limpiada y siguiente
+// oleada): la velocidad extra del descanso es para todos, asi que todos tienen que saberlo
+function NotifyAll(string Msg)
 {
     local Controller C;
     local PlayerController PC;
@@ -77,7 +79,7 @@ function NotifyHostOrAdmin(string Msg)
     for (C = Level.ControllerList; C != None; C = C.NextController)
     {
         PC = PlayerController(C);
-        if (IsHostOrAdmin(PC))
+        if (PC != None)
         {
             PC.ClientMessage(Msg, 'CriticalEvent');
         }
@@ -215,7 +217,7 @@ function BoostPawnAmmo(Pawn P, bool bFill)
     for (Inv = P.Inventory; Inv != None; Inv = Inv.Inventory)
     {
         W = Weapon(Inv);
-        if (W == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(W.Class))
+        if (W == None || class'MutMurioUnaBandaDeGente'.static.IsAdrenalineWeapon(W.Class))
             continue;
         BoostAmmoClass(W.AmmoClass[0]);
         BoostAmmoClass(W.AmmoClass[1]);
@@ -278,7 +280,7 @@ function BoostPickup(Pickup PU)
         // (AmmoAmount, por ejemplo un arma tirada): en ese caso se respeta la que trae
         WP = WeaponPickup(PU);
         WC = class<Weapon>(WP.InventoryType);
-        if (WC == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(WC) || WP.AmmoAmount[0] > 0 || WP.AmmoAmount[1] > 0)
+        if (WC == None || class'MutMurioUnaBandaDeGente'.static.IsAdrenalineWeapon(WC) || WP.AmmoAmount[0] > 0 || WP.AmmoAmount[1] > 0)
             return;
         if (MutInvasionRedeemerPickup(WP) != None || MutInvasionIonPainterPickup(WP) != None || MutInvasionLightningGunPickup(WP) != None)
             return;
@@ -454,9 +456,9 @@ function Mutate(string MutateString, PlayerController Sender)
             {
                 EndPause(InvGame);
                 if (Clamp(SpeedBonus, 0, 200) > 0)
-                    NotifyHostOrAdmin("Siguiente oleada iniciada! Velocidad normal restaurada.");
+                    NotifyAll("Siguiente oleada iniciada! Velocidad normal restaurada.");
                 else
-                    NotifyHostOrAdmin("Siguiente oleada iniciada!");
+                    NotifyAll("Siguiente oleada iniciada!");
             }
         }
     }
@@ -522,9 +524,9 @@ function Timer()
                 InvGame.WaveCountDown = 9999; // Congela el temporizador de la siguiente ronda
                 UpdatePauseSpeed();
                 if (Clamp(SpeedBonus, 0, 200) > 0)
-                    NotifyHostOrAdmin("Oleada limpiada! Velocidad +" $ Clamp(SpeedBonus, 0, 200) $ "%");
+                    NotifyAll("Oleada limpiada! Velocidad +" $ Clamp(SpeedBonus, 0, 200) $ "%");
                 else
-                    NotifyHostOrAdmin("Oleada limpiada!");
+                    NotifyAll("Oleada limpiada!");
                 SendNextWaveHint(0);
             }
         }
@@ -594,5 +596,5 @@ defaultproperties
     CountdownDesc="Segundos que tarda en empezar la oleada despues de usar 'mutate nextwave' (de 0 a 30, 0 = enseguida) [por defecto: 5]"
     GroupName="InvasionPause"
     FriendlyName="[Irreal] Control de plagas FV"
-    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con la tecla H (si no la tiene asignada a otra cosa) o con el comando 'mutate nextwave' en la consola. Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Lo que dan los pickups tambien es el doble. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.4)"
+    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con la tecla H (si no la tiene asignada a otra cosa) o con el comando 'mutate nextwave' en la consola. Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Lo que dan los pickups tambien es el doble. Todo se puede cambiar en Configurar mutadores. (Ver 2.0)"
 }
