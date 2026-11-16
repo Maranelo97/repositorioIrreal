@@ -1,11 +1,6 @@
 class MutGigachadrenalina extends Mutator;
 
 // Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
-var config bool bAdrenalineUltimates;   // las armas ultimas usan adrenalina en vez de municion
-var config int RedeemerCost;       // adrenalina por disparo de cada arma ultima
-var config int IonPainterCost;
-var config int LightningGunCost;
-var config bool bFillAdrenalineOnPickup;   // llenar la adrenalina al agarrar un arma ultima que no tenias
 var config bool bFlightCombo;             // combo Vuelo
 var config bool bVisionCombo;             // combo Vision
 var config bool bCancelCombos;            // cortar el combo activo repitiendo sus teclas
@@ -15,11 +10,6 @@ var config bool bInfiniteAdrenaline;      // la adrenalina de los jugadores siem
 var config int ComboDrainPercent;         // que tan rapido gastan adrenalina los combos (100 = normal)
 var config int AdrenalinePillAmount;      // adrenalina que da cada pastilla (2 en el juego)
 
-var localized string AdrenalineUltimatesText, AdrenalineUltimatesDesc;
-var localized string RedeemerCostText, RedeemerCostDesc;
-var localized string IonPainterCostText, IonPainterCostDesc;
-var localized string LightningGunCostText, LightningGunCostDesc;
-var localized string FillAdrenalineOnPickupText, FillAdrenalineOnPickupDesc;
 var localized string FlightComboText, FlightComboDesc;
 var localized string VisionComboText, VisionComboDesc;
 var localized string CancelCombosText, CancelCombosDesc;
@@ -283,39 +273,11 @@ function StartCombo(PlayerController Sender, xPawn P, class<Combo> ComboClass)
     P.DoCombo(ComboClass);
 }
 
-// Version de GIGACHADrenalina de cada arma ultima (None si no es una de ellas)
-static function class<Inventory> GigaWeaponFor(class<Inventory> WeaponClass)
-{
-    if (WeaponClass == class'XWeapons.Redeemer')
-        return class'GigaRedeemer';
-    if (WeaponClass == class'XWeapons.Painter')
-        return class'GigaIonPainter';
-    if (WeaponClass == class'XWeapons.SniperRifle')
-        return class'GigaLightningGun';
-    return None;
-}
-
-// Cada vez que aparece un arma ultima en el piso (puntos del mapa, Murio una banda de gente o un arma
-// tirada), se cambia lo que entrega por la version que usa adrenalina
+// Pastillas que aparecen despues (las del mapa ya se cambiaron en PostBeginPlay)
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {
-    local WeaponPickup P;
-    local class<Inventory> Giga;
-
-    // Pastillas que aparecen despues (las del mapa ya se cambiaron en PostBeginPlay)
     if (bPillAmountChanged && AdrenalinePickup(Other) != None)
         AdrenalinePickup(Other).AdrenalineAmount = class'XPickups.AdrenalinePickup'.default.AdrenalineAmount;
-
-    if (!bAdrenalineUltimates)
-        return true;
-
-    P = WeaponPickup(Other);
-    if (P != None)
-    {
-        Giga = GigaWeaponFor(P.InventoryType);
-        if (Giga != None)
-            P.InventoryType = Giga;
-    }
     return true;
 }
 
@@ -339,29 +301,19 @@ static function FillPlayInfo(PlayInfo PlayInfo)
 {
     Super.FillPlayInfo(PlayInfo);
     PlayInfo.AddSetting(default.RulesGroup, "bInfiniteAdrenaline", default.InfiniteAdrenalineText, 0, 1, "Check");
+    // Las pastillas y el gasto de los combos solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
     PlayInfo.AddSetting(default.RulesGroup, "AdrenalinePillAmount", default.AdrenalinePillAmountText, 0, 2, "Text", "3;1:100", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bAdrenalineUltimates", default.AdrenalineUltimatesText, 0, 3, "Check");
-    // Las pastillas, los costos, el llenado de adrenalina y el gasto de los combos solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
-    PlayInfo.AddSetting(default.RulesGroup, "RedeemerCost", default.RedeemerCostText, 0, 4, "Text", "3;0:100", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "IonPainterCost", default.IonPainterCostText, 0, 5, "Text", "3;0:100", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "LightningGunCost", default.LightningGunCostText, 0, 6, "Text", "3;0:100", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bFillAdrenalineOnPickup", default.FillAdrenalineOnPickupText, 0, 7, "Check", , , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bFlightCombo", default.FlightComboText, 0, 8, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bVisionCombo", default.VisionComboText, 0, 9, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "ComboDrainPercent", default.ComboDrainPercentText, 0, 10, "Text", "3;0:400", , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "bCancelCombos", default.CancelCombosText, 0, 11, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bLowAdrenalineCombos", default.LowAdrenalineCombosText, 0, 12, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bFlightCombo", default.FlightComboText, 0, 3, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bVisionCombo", default.VisionComboText, 0, 4, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "ComboDrainPercent", default.ComboDrainPercentText, 0, 5, "Text", "3;0:400", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bCancelCombos", default.CancelCombosText, 0, 6, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bLowAdrenalineCombos", default.LowAdrenalineCombosText, 0, 7, "Check");
 }
 
 static event string GetDescriptionText(string PropName)
 {
     switch (PropName)
     {
-        case "bAdrenalineUltimates": return default.AdrenalineUltimatesDesc;
-        case "RedeemerCost":     return default.RedeemerCostDesc;
-        case "IonPainterCost":   return default.IonPainterCostDesc;
-        case "LightningGunCost": return default.LightningGunCostDesc;
-        case "bFillAdrenalineOnPickup": return default.FillAdrenalineOnPickupDesc;
         case "bFlightCombo":     return default.FlightComboDesc;
         case "bVisionCombo":     return default.VisionComboDesc;
         case "bCancelCombos":    return default.CancelCombosDesc;
@@ -373,28 +325,12 @@ static event string GetDescriptionText(string PropName)
     return Super.GetDescriptionText(PropName);
 }
 
-// Las armas de este mutador gastan adrenalina en vez de municion
-static function bool IsAdrenalineWeapon(class<Inventory> InvClass)
-{
-    return ClassIsChildOf(InvClass, class'GigaRedeemer')
-        || ClassIsChildOf(InvClass, class'GigaIonPainter')
-        || ClassIsChildOf(InvClass, class'GigaLightningGun');
-}
 
 defaultproperties
 {
     // Manda este paquete a los jugadores que se conectan: sin esto, a ellos no les llega nada
     // de lo que se dibuja o pasa en su maquina (radar, Vision, mensajes, armas con adrenalina...)
     bAddToServerPackages=True
-    bAdrenalineUltimates=True
-    AdrenalineUltimatesText="Armas ultimas con adrenalina"
-    AdrenalineUltimatesDesc="El Redeemer, el Ion Painter y la Lightning Gun gastan adrenalina en vez de municion. Si se desactiva, usan municion normal y solo quedan los combos [por defecto: activada]"
-    RedeemerCost=50
-    IonPainterCost=25
-    LightningGunCost=5
-    bFillAdrenalineOnPickup=True
-    FillAdrenalineOnPickupText="Llenar la adrenalina al agarrar un arma ultima"
-    FillAdrenalineOnPickupDesc="Al agarrar un arma ultima que no tenias, la adrenalina se llena. Volver a tocar el punto mientras la tenes no da nada. Solo funciona con las armas ultimas con adrenalina [por defecto: activada]"
     bFlightCombo=True
     FlightComboText="Combo Vuelo"
     FlightComboDesc="Cuatro veces derecha: volas libremente durante 20 segundos (con el gasto normal); saltar sube y agacharse baja [por defecto: activada]"
@@ -416,13 +352,7 @@ defaultproperties
     ComboDrainPercentDesc="Que tan rapido gastan adrenalina los combos: con 50 duran el doble y con 200 la mitad. Vale para todos los combos (de 0 a 400, 0 = no gastan) [por defecto: 100]"
     InfiniteAdrenalineText="Adrenalina infinita"
     InfiniteAdrenalineDesc="La adrenalina de los jugadores (no la de los bots) siempre esta llena: los combos no se terminan solos y, con las armas ultimas con adrenalina, disparar no gasta [por defecto: desactivada]"
-    RedeemerCostText="Adrenalina por disparo: Redeemer"
-    RedeemerCostDesc="Adrenalina que cuesta cada disparo del Redeemer (de 0 a 100, 0 = gratis) [por defecto: 50]"
-    IonPainterCostText="Adrenalina por disparo: Ion Painter"
-    IonPainterCostDesc="Adrenalina que cuesta cada disparo del Ion Painter (de 0 a 100, 0 = gratis) [por defecto: 25]"
-    LightningGunCostText="Adrenalina por disparo: Lightning Gun"
-    LightningGunCostDesc="Adrenalina que cuesta cada disparo de la Lightning Gun (de 0 a 100, 0 = gratis) [por defecto: 5]"
     GroupName="Gigachadrenalina"
     FriendlyName="[Irreal] GIGACHADrenalina"
-    Description="El Redeemer, el Ion Painter y la Lightning Gun usan adrenalina en vez de municion: cada disparo cuesta adrenalina (50, 25 y 5 por defecto) y al agarrar una se llena la adrenalina. Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 1.4.3)"
+    Description="Agrega dos combos: Vuelo (cuatro veces derecha; saltar sube y agacharse baja) y Vision (cuatro veces izquierda), que marca a traves de las paredes a los monstruos, los jugadores, el Rey Cthulhu y los pickups utiles, con la vida de cada uno. Los combos se cortan repitiendo sus teclas y se encadenan marcando las de otro. Los combos se pueden hacer con menos de 100 de adrenalina (duran menos). Todo se cambia en Configurar mutadores. (Ver 1.4.4)"
 }

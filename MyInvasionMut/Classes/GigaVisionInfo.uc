@@ -88,7 +88,7 @@ static function bool UsedUltimateThisWave(Pickup PU, Pawn Viewer)
         R = UltimatesRules(G);
         if (R != None)
             return R.IsUltimatePickup(PU) && R.UltimatesMut != None && !R.UltimatesMut.bRepeatPickup
-                && R.HasPickedUp(Viewer.Controller);
+                && R.HasPickedUp(Viewer.Controller, PU.Class);
     }
     return false;
 }

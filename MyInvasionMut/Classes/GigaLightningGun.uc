@@ -1,6 +1,6 @@
 // Lightning Gun de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina).
-// El zoom (disparo secundario) no gasta nada.
-class GigaLightningGun extends SniperRifle;
+// El zoom (disparo secundario) no gasta nada. Hereda el rayo en cadena de UltiLightningGun.
+class GigaLightningGun extends UltiLightningGun;
 
 var int ShotCost;   // adrenalina por disparo; la decide el servidor
 
@@ -14,7 +14,7 @@ simulated function PostBeginPlay()
 {
     Super.PostBeginPlay();
     if (Role == ROLE_Authority)
-        ShotCost = Clamp(class'MutGigachadrenalina'.default.LightningGunCost, 0, 100);
+        ShotCost = Clamp(class'MutInvasionUltimates'.default.LightningGunCost, 0, 100);
 }
 
 // Al agarrar el arma (si no la tenias) se llena la adrenalina, segun la opcion del mutador

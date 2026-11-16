@@ -14,14 +14,19 @@ var localized string LateBoostWaveText, LateBoostWaveDesc;
 var localized string LateBoostPercentText, LateBoostPercentDesc;
 
 // Maximos mas altos en las ultimas oleadas. La municion maxima es de la clase de municion (igual
-// para todos), asi que se cambia el valor por defecto de cada clase y se devuelve al cambiar de mapa.
+// para todos), asi que se cambia el valor por defecto de cada clase, y ese valor dura hasta
+// cerrar el juego, aunque se empiece otra partida desde el menu (ahi no hay ServerTraveling).
+// Este paquete, en cambio, se vuelve a cargar en cada partida y pierde lo que tenia anotado.
+// Por eso cada cambio se guarda en el .ini ("Clase=original") y se devuelve al terminar la
+// partida, al cambiar de mapa y al empezar la siguiente partida con este mutador.
 var bool bLateBoostActive;
 var LateBoostInfo BoostInfo;
-var array< class<Ammunition> > BoostedAmmo;
-var array<int> BoostedAmmoOriginal;
+var config array<string> AmmoToRestore;
 
 var bool bWaitingForAdmin;
 var bool bWaveWasActive;
+var float CountdownStartTime;   // al terminar la pausa: cuando empieza la cuenta (0 = no hay)
+const AnnouncementTime = 1.3;   // espera despues de "Next wave in..." antes de la cuenta (ver Tick)
 
 // Jugadores con la velocidad extra de la pausa: lo que tenian antes (se devuelve al terminar)
 // y la velocidad que les puso la pausa, para saber si despues otra cosa la cambio
@@ -35,6 +40,11 @@ var array<BoostEntry> Boosted;
 
 function PostBeginPlay()
 {
+    // Por si una partida anterior termino con los maximos de municion cambiados
+    RestoreAmmoClasses();
+    // La tecla H inicia la siguiente oleada (NextWaveKeyInteraction, en cada jugador)
+    if (Invasion(Level.Game) != None)
+        Spawn(class'NextWaveKeyInfo');
     SetTimer(1.0, true);
     Super.PostBeginPlay();
 }
@@ -187,12 +197,11 @@ function BoostAmmoClass(class<Ammunition> A)
 
     if (A == None)
         return;
-    for (i = 0; i < BoostedAmmo.Length; i++)
-        if (BoostedAmmo[i] == A)
+    for (i = 0; i < AmmoToRestore.Length; i++)
+        if (Left(AmmoToRestore[i], Len(string(A)) + 1) ~= (string(A) $ "="))
             return;
-    i = BoostedAmmo.Length;
-    BoostedAmmo[i] = A;
-    BoostedAmmoOriginal[i] = A.default.MaxAmmo;
+    AmmoToRestore[AmmoToRestore.Length] = string(A) $ "=" $ A.default.MaxAmmo;
+    SaveConfig();
     A.default.MaxAmmo = int(float(A.default.MaxAmmo) * LateBoostFactor() + 0.5);
 }
 
@@ -206,7 +215,7 @@ function BoostPawnAmmo(Pawn P, bool bFill)
     for (Inv = P.Inventory; Inv != None; Inv = Inv.Inventory)
     {
         W = Weapon(Inv);
-        if (W == None || class'MutGigachadrenalina'.static.IsAdrenalineWeapon(W.Class))
+        if (W == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(W.Class))
             continue;
         BoostAmmoClass(W.AmmoClass[0]);
         BoostAmmoClass(W.AmmoClass[1]);
@@ -242,13 +251,60 @@ function BoostPawn(Pawn P, bool bFill)
     BoostPawnAmmo(P, bFill);
 }
 
+// Lo que da cada pickup sube en la misma proporcion que los maximos: vida (viales, botiquines y
+// Super Keg), escudos, pastillas de adrenalina, cajas de municion y la municion con la que
+// viene cada arma. Se cambia en cada pickup del mapa al empezar y, despues, en los que aparecen
+// (CheckReplacement); un pickup que vuelve a aparecer es el mismo, asi que conserva el valor.
+// El Double Damage y las armas ultimas no cambian.
+function BoostPickup(Pickup PU)
+{
+    local float F;
+    local WeaponPickup WP;
+    local class<Weapon> WC;
+    local int m;
+
+    F = LateBoostFactor();
+    if (TournamentHealth(PU) != None)
+        TournamentHealth(PU).HealingAmount = int(TournamentHealth(PU).HealingAmount * F + 0.5);
+    else if (ShieldPickup(PU) != None)
+        ShieldPickup(PU).ShieldAmount = int(ShieldPickup(PU).ShieldAmount * F + 0.5);
+    else if (AdrenalinePickup(PU) != None)
+        AdrenalinePickup(PU).AdrenalineAmount = AdrenalinePickup(PU).AdrenalineAmount * F;
+    else if (Ammo(PU) != None)
+        Ammo(PU).AmmoAmount = int(Ammo(PU).AmmoAmount * F + 0.5);
+    else if (WeaponPickup(PU) != None)
+    {
+        // Un arma da InitialAmount de su municion, salvo que el pickup traiga su propia cantidad
+        // (AmmoAmount, por ejemplo un arma tirada): en ese caso se respeta la que trae
+        WP = WeaponPickup(PU);
+        WC = class<Weapon>(WP.InventoryType);
+        if (WC == None || class'MutInvasionUltimates'.static.IsAdrenalineWeapon(WC) || WP.AmmoAmount[0] > 0 || WP.AmmoAmount[1] > 0)
+            return;
+        if (MutInvasionRedeemerPickup(WP) != None || MutInvasionIonPainterPickup(WP) != None || MutInvasionLightningGunPickup(WP) != None)
+            return;
+        for (m = 0; m < 2; m++)
+            if (WC.default.FireModeClass[m] != None && WC.default.FireModeClass[m].default.AmmoClass != None)
+                WP.AmmoAmount[m] = int(WC.default.FireModeClass[m].default.AmmoClass.default.InitialAmount * F + 0.5);
+    }
+}
+
+function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
+{
+    if (bLateBoostActive && Pickup(Other) != None)
+        BoostPickup(Pickup(Other));
+    return true;
+}
+
 // Al empezar el descanso antes de la oleada elegida: a todos los vivos, y todo lleno
 function StartLateBoost()
 {
     local Controller C;
+    local Pickup PU;
     local string Amount;
 
     bLateBoostActive = true;
+    foreach DynamicActors(class'Pickup', PU)
+        BoostPickup(PU);
     // Para que el HUD de cada jugador muestre el escudo y la adrenalina por encima de 150 y 100
     if (BoostInfo == None)
         BoostInfo = Spawn(class'LateBoostInfo');
@@ -287,13 +343,22 @@ function BoostAllAmmo()
 
 function RestoreAmmoClasses()
 {
-    local int i;
+    local int i, j;
+    local class<Ammunition> A;
 
-    for (i = 0; i < BoostedAmmo.Length; i++)
-        if (BoostedAmmo[i] != None)
-            BoostedAmmo[i].default.MaxAmmo = BoostedAmmoOriginal[i];
-    BoostedAmmo.Length = 0;
-    BoostedAmmoOriginal.Length = 0;
+    if (AmmoToRestore.Length == 0)
+        return;
+    for (i = 0; i < AmmoToRestore.Length; i++)
+    {
+        j = InStr(AmmoToRestore[i], "=");
+        if (j < 0)
+            continue;
+        A = class<Ammunition>(DynamicLoadObject(Left(AmmoToRestore[i], j), class'Class', true));
+        if (A != None)
+            A.default.MaxAmmo = int(Mid(AmmoToRestore[i], j + 1));
+    }
+    AmmoToRestore.Length = 0;
+    SaveConfig();
 }
 
 // Al cambiar de mapa se devuelven los maximos de municion originales (los valores por defecto de
@@ -317,11 +382,28 @@ function EndPause(Invasion InvGame)
     bWaveWasActive = false;
     RemovePauseSpeed();
     SendNextWaveHint(1);
-    // Inicia la cuenta regresiva (5 segundos por defecto). Invasion empieza la oleada cuando
-    // WaveCountDown llega a 1 o menos, asi que con 0 empieza en el siguiente segundo.
-    InvGame.WaveCountDown = Clamp(Countdown, 0, 30) + 1;
-    // El "Next wave in..." del locutor, ahora que de verdad viene la oleada
+    // El "Next wave in..." del locutor, ahora que de verdad viene la oleada. La cuenta sigue
+    // congelada hasta que termina la voz (ver Timer), asi el primer numero no la pisa.
+    InvGame.WaveCountDown = 9999;
+    CountdownStartTime = Level.TimeSeconds + AnnouncementTime;
     Level.Game.BroadcastLocalizedMessage(class'NextWaveAnnouncement');
+}
+
+// La cuenta arranca en el momento justo (el Timer es de a un segundo y la haria esperar de mas)
+function Tick(float DeltaTime)
+{
+    Super.Tick(DeltaTime);
+    if (CountdownStartTime > 0 && Level.TimeSeconds >= CountdownStartTime && Invasion(Level.Game) != None)
+        StartCountdown(Invasion(Level.Game));
+}
+
+// Arranca la cuenta regresiva (5 segundos por defecto). Invasion resta 1 por segundo, dice el
+// numero WaveCountDown - 1 y empieza la oleada al llegar a 1: con Countdown + 2, el primer
+// numero que se escucha es Countdown. Con 0 empieza en el siguiente segundo.
+function StartCountdown(Invasion InvGame)
+{
+    CountdownStartTime = 0;
+    InvGame.WaveCountDown = Clamp(Countdown, 0, 30) + 2;
 }
 
 // Lo que Invasion hace cuando la cuenta del descanso llega a 13, sin el "Next wave in..." (que
@@ -387,6 +469,14 @@ function Timer()
     local Invasion InvGame;
 
     InvGame = Invasion(Level.Game);
+
+    // Al terminar la partida (ganada o perdida) vuelven los maximos de municion normales: la
+    // siguiente puede empezar desde el menu, sin pasar por ServerTraveling
+    if (Level.Game.bGameEnded)
+    {
+        RestoreAmmoClasses();
+        return;
+    }
 
     if (InvGame != None)
     {
@@ -493,7 +583,7 @@ defaultproperties
     LateBoostWave=15
     LateBoostPercent=100
     LateBoostText="Maximos mas altos en las ultimas oleadas"
-    LateBoostDesc="Desde la oleada elegida (15 por defecto), la vida, el escudo, la municion y la adrenalina maximas de los jugadores y los bots suben (al doble por defecto), y en el descanso antes de esa oleada se llenan [por defecto: activada]"
+    LateBoostDesc="Desde la oleada elegida (15 por defecto), la vida, el escudo, la municion y la adrenalina maximas de los jugadores y los bots suben (al doble por defecto), y en el descanso antes de esa oleada se llenan. Lo que dan los pickups de vida, escudo, adrenalina y municion, y la municion con la que vienen las armas, sube igual [por defecto: activada]"
     LateBoostWaveText="Oleada de los maximos mas altos"
     LateBoostWaveDesc="Primera oleada en la que suben los maximos (de 1 a 99) [por defecto: 15]"
     LateBoostPercentText="Aumento de los maximos (%)"
@@ -504,5 +594,5 @@ defaultproperties
     CountdownDesc="Segundos que tarda en empezar la oleada despues de usar 'mutate nextwave' (de 0 a 30, 0 = enseguida) [por defecto: 5]"
     GroupName="InvasionPause"
     FriendlyName="[Irreal] Control de plagas FV"
-    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con el comando 'mutate nextwave' (para usar la tecla Q, escribir en la consola: set input Q mutate nextwave). Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.3)"
+    Description="Pausa el inicio de la siguiente ola en Invasion y otorga +50% de velocidad durante la pausa para recolectar items. El host o un admin inicia la ola con la tecla H (si no la tiene asignada a otra cosa) o con el comando 'mutate nextwave' en la consola. Desde el descanso antes de la oleada 15, la vida, el escudo, la municion y la adrenalina maximas son el doble, y en ese momento se llenan. Lo que dan los pickups tambien es el doble. Todo se puede cambiar en Configurar mutadores. (Ver 1.4.4)"
 }

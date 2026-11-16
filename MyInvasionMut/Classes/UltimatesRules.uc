@@ -2,23 +2,25 @@ class UltimatesRules extends GameRules;
 
 var MutInvasionUltimates UltimatesMut;
 
-// Quienes ya recogieron el arma del punto especial desde el ultimo cambio de arma
-// (se usa cuando la opcion de recogerla varias veces por oleada esta desactivada)
+// Quienes ya recogieron cada arma ultima en esta oleada, y cual (se usa cuando la opcion de
+// recogerla varias veces por oleada esta desactivada). Es por arma: el mapa puede tener las suyas.
 var array<Controller> PickedUp;
+var array< class<Pickup> > PickedClass;
 
 // El arma del punto cambia al terminar cada oleada (al empezar el descanso): ahi se vacia la lista
 function ResetPickups()
 {
     PickedUp.Length = 0;
+    PickedClass.Length = 0;
 }
 
-function bool HasPickedUp(Controller C)
+function bool HasPickedUp(Controller C, class<Pickup> PickupClass)
 {
     local int i;
 
     for (i = 0; i < PickedUp.Length; i++)
     {
-        if (PickedUp[i] == C)
+        if (PickedUp[i] == C && PickedClass[i] == PickupClass)
             return true;
     }
     return false;
@@ -44,8 +46,11 @@ static function NotePickup(Actor Context, Pawn Receiver)
         R = UltimatesRules(G);
         if (R != None)
         {
-            if (!R.HasPickedUp(Receiver.Controller))
+            if (!R.HasPickedUp(Receiver.Controller, Pickup(Context).Class))
+            {
+                R.PickedClass[R.PickedUp.Length] = Pickup(Context).Class;
                 R.PickedUp[R.PickedUp.Length] = Receiver.Controller;
+            }
             return;
         }
     }
@@ -68,7 +73,7 @@ function bool OverridePickupQuery(Pawn Other, Pickup item, out byte bAllowPickup
         }
 
         // Una sola vez por oleada si la opcion esta desactivada
-        if (UltimatesMut != None && !UltimatesMut.bRepeatPickup && HasPickedUp(Other.Controller))
+        if (UltimatesMut != None && !UltimatesMut.bRepeatPickup && HasPickedUp(Other.Controller, item.Class))
         {
             bAllowPickup = 0;
             return true;
