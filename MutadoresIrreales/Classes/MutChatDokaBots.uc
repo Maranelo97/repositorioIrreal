@@ -1,8 +1,11 @@
 class MutChatDokaBots extends Mutator;
 
-var string Phrases[50];
+var string Phrases[51];
 var string CthulhuPhrases[9];
-var string UltimateKillPhrases[6];
+var string UltimateKillPhrases[10];
+// Con que armas ultimas sale cada frase de festejo: suma de RedeemerBit, IonPainterBit y LightningGunBit
+var byte UltimateKillWeapons[10];
+var byte RedeemerBit, IonPainterBit, LightningGunBit;
 var int LastPhraseIndex;
 var float LastChatTime;
 var float NextRandomChatTime;
@@ -10,13 +13,26 @@ var int LastWaveNum;
 var bool bWasWaveActive;
 var bool bChampionAnnounced;
 
+// Disparos de Redeemer / Ion Painter que ya hicieron su sorteo de festejo: un disparo mata durante
+// cerca de un segundo, asi que las bajas del mismo jugador con la misma arma en los segundos
+// siguientes son del mismo disparo y no vuelven a sortear
+struct UltiShot
+{
+    var Controller Killer;
+    var byte Weapon;
+    var float Time;
+};
+var array<UltiShot> RecentUltiShots;
+var float UltiShotWindow;
+
 // Opciones de "Configurar mutadores"; quedan guardadas en el .ini del juego del host
 var config bool bSilenceBotVoice;        // silencia los mensajes de voz normales de los bots
 var config bool bRandomPhrases;          // frases al azar (las de cada tantos segundos y las de bajas, poca vida y oleadas)
 var config bool bDeathTaunts;            // burlas por nombre al morir un jugador
 var config bool bCthulhuReactions;       // reaccion cuando aparece el Rey Cthulhu
-var config bool bUltimateKillReactions;  // festejos de bajas con Redeemer / Ion Painter
+var config bool bUltimateKillReactions;  // festejos de bajas con armas ultimas
 var config int PhraseInterval;           // segundos entre frases al azar
+var config int UltimateKillChance;       // probabilidad (%) de festejo por disparo que mata
 
 var localized string SilenceBotVoiceText, SilenceBotVoiceDesc;
 var localized string RandomPhrasesText, RandomPhrasesDesc;
@@ -24,6 +40,7 @@ var localized string DeathTauntsText, DeathTauntsDesc;
 var localized string CthulhuReactionsText, CthulhuReactionsDesc;
 var localized string UltimateKillReactionsText, UltimateKillReactionsDesc;
 var localized string PhraseIntervalText, PhraseIntervalDesc;
+var localized string UltimateKillChanceText, UltimateKillChanceDesc;
 
 // Segundos entre frases al azar, dentro del rango de la opcion
 function float ChatInterval()
@@ -154,26 +171,32 @@ function string GetRandomPhrase()
 
 function string GetHumanDeathMockPhrase(string VictimName)
 {
-    switch (Rand(9))
+    switch (Rand(12))
     {
         case 0:
-            return WithName("¡%n, HASTA LOS HUEVOS!", VictimName);
+            return WithName("%n, HASTA LOS HUEVOS!", VictimName);
         case 1:
-            return WithName("¡NOOO %n, CÓMO TE VAS A MORIR ASÍ CARAJO?!", VictimName);
+            return WithName("NOOO %n, CÓMO TE VAS A MORIR ASÍ CARAJO?!", VictimName);
         case 2:
-            return WithName("¡LEVANTATE %n, Y ANDÁ A UNA FÁBRICA, CARAJO!", VictimName);
+            return WithName("LEVANTATE %n, Y ANDÁ A UNA FÁBRICA, CARAJO!", VictimName);
         case 3:
-            return WithName("¡%n MURIÓ! NECESITAMOS MÁS BOTS PARA CARREARLO!", VictimName);
+            return WithName("%n MURIÓ! NECESITAMOS MÁS BOTS PARA CARREARLO!", VictimName);
         case 4:
-            return WithName("¡MIRÁ CÓMO JUEGAN CON LA VIDA DE %n!", VictimName);
+            return WithName("MIRÁ CÓMO JUEGAN CON LA VIDA DE %n!", VictimName);
         case 5:
-            return WithName("¡%n TENÍA INFORMACIÓN QUE PUEDE LLEVAR AL ARRESTO DE CRISTINA KIRCHNER!", VictimName);
+            return WithName("%n TENÍA INFORMACIÓN QUE PUEDE LLEVAR AL ARRESTO DE CRISTINA KIRCHNER!", VictimName);
         case 6:
-            return WithName("¡A %n LE PEGARON EL TIRO DE MÁXIMO A NÉSTOR!", VictimName);
+            return WithName("A %n LE PEGARON EL TIRO DE MÁXIMO A NÉSTOR!", VictimName);
         case 7:
-            return WithName("¡CHAU %n, APROBASTE EL CASTING PARA EL CAJÓN!", VictimName);
+            return WithName("CHAU %n, APROBASTE EL CASTING PARA EL CAJÓN!", VictimName);
+        case 8:
+            return WithName("%n FUE PIOLADO EN LA SEDE DEL PJ!", VictimName);
+        case 9:
+            return WithName("NO CUIDARON A %n!", VictimName);
+        case 10:
+            return WithName("%n SE LO TRANSMITIÓ TODO A SU BEBÉ!", VictimName);
         default:
-            return WithName("¡%n FUE PIOLADO EN LA SEDE DEL PJ!", VictimName);
+            return WithName("%n NO AGUANTÓ TANTA VERDAD!", VictimName);
     }
 }
 
@@ -252,17 +275,56 @@ function TriggerCthulhuBossChat()
     SendBotMessage(None, Msg);
 }
 
-function TriggerUltimateKillChat(Bot KillerBot)
+// Una baja con un arma ultima (Weapon: RedeemerBit, IonPainterBit o LightningGunBit). Solo la
+// primera baja de cada disparo sortea el festejo, con una frase de las que corresponden a esa arma.
+// (Se compara el arma y no el tipo de dano: un disparo de la Lightning Gun puede matar con tiro a
+// la cabeza y con el rayo en cadena, que son tipos distintos.)
+function TriggerUltimateKillChat(Controller Killer, byte Weapon)
 {
-    local string Msg;
+    local int i, Count, Pick;
+    local bool bSameShot;
 
-    if (!bUltimateKillReactions || Level.TimeSeconds - LastChatTime < 2.5)
-    {
+    if (!bUltimateKillReactions || Killer == None)
         return;
-    }
 
-    Msg = UltimateKillPhrases[Rand(ArrayCount(UltimateKillPhrases))];
-    SendBotMessage(KillerBot, Msg);
+    for (i = RecentUltiShots.Length - 1; i >= 0; i--)
+    {
+        if (RecentUltiShots[i].Killer == None || Level.TimeSeconds - RecentUltiShots[i].Time > UltiShotWindow)
+            RecentUltiShots.Remove(i, 1);
+        else if (RecentUltiShots[i].Killer == Killer && RecentUltiShots[i].Weapon == Weapon)
+            bSameShot = true;
+    }
+    if (bSameShot)
+        return;
+
+    i = RecentUltiShots.Length;
+    RecentUltiShots.Length = i + 1;
+    RecentUltiShots[i].Killer = Killer;
+    RecentUltiShots[i].Weapon = Weapon;
+    RecentUltiShots[i].Time = Level.TimeSeconds;
+
+    if (FRand() * 100.0 >= Clamp(UltimateKillChance, 1, 100) || Level.TimeSeconds - LastChatTime < 2.5)
+        return;
+
+    // Una frase al azar entre las de esa arma
+    for (i = 0; i < ArrayCount(UltimateKillPhrases); i++)
+        if ((UltimateKillWeapons[i] & Weapon) != 0)
+            Count++;
+    if (Count == 0)
+        return;
+    Pick = Rand(Count);
+    for (i = 0; i < ArrayCount(UltimateKillPhrases); i++)
+    {
+        if ((UltimateKillWeapons[i] & Weapon) == 0)
+            continue;
+        if (Pick == 0)
+        {
+            // Si mato un bot, festeja el mismo; si mato un jugador, festeja un bot cualquiera
+            SendBotMessage(Bot(Killer), UltimateKillPhrases[i]);
+            return;
+        }
+        Pick--;
+    }
 }
 
 function TriggerHumanDeathTaunt(Controller DeadHuman)
@@ -281,51 +343,6 @@ function TriggerHumanDeathTaunt(Controller DeadHuman)
 
     VictimName = DeadHuman.PlayerReplicationInfo.PlayerName;
     SendBotMessage(None, GetHumanDeathMockPhrase(VictimName));
-}
-
-function string GetKayrosSnitchPhrase(string TargetName, bool bIsMuchoKayros)
-{
-    if (bIsMuchoKayros)
-    {
-        switch (Rand(4))
-        {
-            case 0:
-                return WithName("¡MIREN A %n, TIENE MUCHO KAYROS ESTA RONDA!", TargetName);
-            case 1:
-                return WithName("¡%n LIGÓ MUCHO KAYROS, CÓMO JUEGAN CON MI GUITA!", TargetName);
-            case 2:
-                return WithName("¡CUIDADO CON %n, TIENE MUCHO KAYROS Y PEGA MÁS FUERTE!", TargetName);
-            default:
-                return WithName("¡QUÉ ORTO %n, TIENE MUCHO KAYROS!", TargetName);
-        }
-    }
-    else
-    {
-        switch (Rand(4))
-        {
-            case 0:
-                return WithName("¡MIREN A %n, TIENE MUY POCO KAYROS!", TargetName);
-            case 1:
-                return WithName("¡%n TIENE POCO KAYROS, HASTA LOS HUEVOS!", TargetName);
-            case 2:
-                return WithName("¡CUIDEN A %n, QUE TIENE POCO KAYROS Y SE ROMPE CON NADA!", TargetName);
-            default:
-                return WithName("¡JAJAJA %n, TE TOCÓ MUY POCO KAYROS ESTA RONDA!", TargetName);
-        }
-    }
-}
-
-function TriggerKayrosSnitchChat(PlayerController TargetPC, bool bIsMuchoKayros)
-{
-    local string TargetName;
-
-    if (TargetPC == None || TargetPC.PlayerReplicationInfo == None)
-    {
-        return;
-    }
-
-    TargetName = TargetPC.PlayerReplicationInfo.PlayerName;
-    SendBotMessage(None, GetKayrosSnitchPhrase(TargetName, bIsMuchoKayros));
 }
 
 function Timer()
@@ -384,12 +401,13 @@ static function FillPlayInfo(PlayInfo PlayInfo)
 {
     Super.FillPlayInfo(PlayInfo);
     PlayInfo.AddSetting(default.RulesGroup, "bRandomPhrases", default.RandomPhrasesText, 0, 1, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bDeathTaunts", default.DeathTauntsText, 0, 2, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bCthulhuReactions", default.CthulhuReactionsText, 0, 3, "Check");
-    PlayInfo.AddSetting(default.RulesGroup, "bUltimateKillReactions", default.UltimateKillReactionsText, 0, 4, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bDeathTaunts", default.DeathTauntsText, 0, 3, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bCthulhuReactions", default.CthulhuReactionsText, 0, 4, "Check");
+    PlayInfo.AddSetting(default.RulesGroup, "bUltimateKillReactions", default.UltimateKillReactionsText, 0, 5, "Check");
     // Solo se ven con "Ver opciones avanzadas" (ultimo parametro de AddSetting)
-    PlayInfo.AddSetting(default.RulesGroup, "bSilenceBotVoice", default.SilenceBotVoiceText, 0, 5, "Check", , , , True);
-    PlayInfo.AddSetting(default.RulesGroup, "PhraseInterval", default.PhraseIntervalText, 0, 6, "Text", "3;5:300", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "UltimateKillChance", default.UltimateKillChanceText, 0, 6, "Text", "3;1:100", , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "bSilenceBotVoice", default.SilenceBotVoiceText, 0, 7, "Check", , , , True);
+    PlayInfo.AddSetting(default.RulesGroup, "PhraseInterval", default.PhraseIntervalText, 0, 2, "Text", "3;5:300", , , True);
 }
 
 static event string GetDescriptionText(string PropName)
@@ -401,6 +419,7 @@ static event string GetDescriptionText(string PropName)
         case "bDeathTaunts":           return default.DeathTauntsDesc;
         case "bCthulhuReactions":      return default.CthulhuReactionsDesc;
         case "bUltimateKillReactions": return default.UltimateKillReactionsDesc;
+        case "UltimateKillChance":     return default.UltimateKillChanceDesc;
         case "PhraseInterval":         return default.PhraseIntervalDesc;
     }
     return Super.GetDescriptionText(PropName);
@@ -417,6 +436,8 @@ defaultproperties
     bCthulhuReactions=True
     bUltimateKillReactions=True
     PhraseInterval=30
+    UltimateKillChance=5
+    UltiShotWindow=3.0
     SilenceBotVoiceText="Silenciar los mensajes de voz de los bots"
     SilenceBotVoiceDesc="Saca los mensajes de voz normales de los bots (por ejemplo I've got your back), asi en el chat solo quedan las frases de Chat-doka. Los bots siguen obedeciendo ordenes, pero no responden en voz alta [por defecto: activada]"
     RandomPhrasesText="Frases al azar"
@@ -425,8 +446,10 @@ defaultproperties
     DeathTauntsDesc="Un bot se burla por nombre del jugador que muere [por defecto: activada]"
     CthulhuReactionsText="Reacciones al Rey Cthulhu"
     CthulhuReactionsDesc="Un bot reacciona cuando aparece el Rey Cthulhu [por defecto: activada]"
-    UltimateKillReactionsText="Festejos con Redeemer e Ion Painter"
-    UltimateKillReactionsDesc="Un bot festeja cuando mata con el Redeemer o el Ion Painter [por defecto: activada]"
+    UltimateKillReactionsText="Festejos con armas ultimas"
+    UltimateKillReactionsDesc="A veces un bot festeja cuando alguien mata monstruos con el Redeemer, el Ion Painter o la Lightning Gun de Murio una banda de gente, con frases de esa arma (como mucho una vez por disparo; la probabilidad esta en las opciones avanzadas) [por defecto: activada]"
+    UltimateKillChanceText="Probabilidad de festejo (%)"
+    UltimateKillChanceDesc="Probabilidad de que un bot festeje cada disparo de un arma ultima que mata monstruos (de 1 a 100) [por defecto: 5]"
     PhraseIntervalText="Segundos entre frases al azar"
     PhraseIntervalDesc="Cada cuantos segundos un bot dice una frase al azar; tambien es el tiempo minimo entre las frases de la lista general (de 5 a 300) [por defecto: 30]"
     Phrases(0)="CUÁNTO VALE LOS ELAO DE 100?, VALEN 100!!!"
@@ -435,7 +458,7 @@ defaultproperties
     Phrases(3)="GANATE LA GARCHA!"
     Phrases(4)="HASTA LOS HUEVOS!"
     Phrases(5)="QUÉ HACÉS MARIANOSKY?, PASAME EL DATASET!"
-    Phrases(6)="¿CÓMO COJO CARAJO!?"
+    Phrases(6)="CÓMO COJO CARAJO!?"
     Phrases(7)="LIBEREN A CHADOCA!!!"
     Phrases(8)="AHORA EL TORNEO ES MUY REAL!"
     Phrases(9)="AGUANTE LA COMPETENCIA FALAZ!"
@@ -445,7 +468,7 @@ defaultproperties
     Phrases(13)="...........OOOOOCHOOOOOOOOOHHH!!!!!!"
     Phrases(14)="A MÍ POR 10MIL NO ME VAN A LLEVAR!"
     Phrases(15)="APROBASTE CASTING CONEJITO!, BIENVENIDO A LA EMPRESA!"
-    Phrases(16)="HACEME UN OEVEJEROALEMAN!"
+    Phrases(16)="HACEME UN OVEJEROALEMAN!"
     Phrases(17)="Y ANDÁ A UNA FÁBRICA!, CARAJO!"
     Phrases(18)="NECESITAMOS MÁS BOTS!"
     Phrases(19)="NO LE DEN ASILO A GRACHU, ES UN PELIGRO!"
@@ -464,21 +487,22 @@ defaultproperties
     Phrases(32)="PÁGUENLE AL PANA RAMÓN CLEMENTE!!!"
     Phrases(33)="COMEME BIEN LOS HUEVOS NÉSTOR!"
     Phrases(34)="TE GUSTA LA VIOLENCIA!?!?"
-    Phrases(35)="NOOOO AMIGO, MURIÓ UNA BANDA DE GENTE!!"
-    Phrases(36)="QUIÉN ES TU DUEÑO CARAJO! TE GUSTA CÓMO TE GARCHO!?!"
-    Phrases(37)="GALLETITAS VANINA, ESTÁN BUENÍSIMAS!!"
-    Phrases(38)="GENIALESSSSS!!"
-    Phrases(39)="GENUISSSSSS!"
-    Phrases(40)="CALDOS KNORR, LO MEJOR PARA EL INVIERNO!"
-    Phrases(41)="LABORATORIOS BAGÓ, CONCIENCIA AL SERVICIO DE LA SALUD!"
-    Phrases(42)="YO SOY EL LUIS AMSTRONG DE LA CHOTA!"
-    Phrases(43)="AHHAHAHAHAHAHAH, EL CTHULHU GARCADO EN FUGACETA!"
-    Phrases(44)="BUENO, VAMOS AL TELO!"
-    Phrases(45)="MIREN CHICOS, MARCIEL DESNUDO!"
-    Phrases(46)="EL 8 DE OCTUBRE MARCIEL CUMPLE AÑOS!"
-    Phrases(47)="HAY QUE HIDRATARSE PARA EL HYPERBLASTO!"
-    Phrases(48)="JUGAR AL HYPERBLASTO ME CAMBIÓ LA VIDA!"
-    Phrases(49)="MI VIEJA ME DIO LA VIDA, EL HYPERBLASTO LAS GANAS DE VIVIRLA"
+    Phrases(35)="QUIÉN ES TU DUEÑO CARAJO! TE GUSTA CÓMO TE GARCHO!?!"
+    Phrases(36)="GALLETITAS VANINA, ESTÁN BUENÍSIMAS!!"
+    Phrases(37)="GENIALESSSSS!!"
+    Phrases(38)="GENUISSSSSS!"
+    Phrases(39)="CALDOS KNORR, LO MEJOR PARA EL INVIERNO!"
+    Phrases(40)="LABORATORIOS BAGÓ, CONCIENCIA AL SERVICIO DE LA SALUD!"
+    Phrases(41)="YO SOY EL LOUIS ARMSTRONG DE LA CHOTA!"
+    Phrases(42)="AHHAHAHAHAHAHAH, EL CTHULHU GARCADO EN FUGACETA!"
+    Phrases(43)="BUENO, VAMOS AL TELO!"
+    Phrases(44)="MIREN CHICOS, MARCIEL DESNUDO!"
+    Phrases(45)="EL 8 DE OCTUBRE MARCIEL CUMPLE AÑOS!"
+    Phrases(46)="HAY QUE HIDRATARSE PARA EL HYPERBLASTO!"
+    Phrases(47)="JUGAR AL HYPERBLASTO ME CAMBIÓ LA VIDA!"
+    Phrases(48)="MI VIEJA ME DIO LA VIDA, EL HYPERBLASTO LAS GANAS DE VIVIRLA"
+    Phrases(49)="TODO OK, UNA ESTRELLA"
+    Phrases(50)="ESTA ES LA DÉCADA CUCKEADA"
     CthulhuPhrases(0)="CORRAN QUE APARECIÓ EL REY CTHULHU, HASTA LOS HUEVOS!"
     CthulhuPhrases(1)="MIREN EL TAMAÑO DE ESE CTHULHU, CÓMO JUEGAN CON MI GUITA!"
     CthulhuPhrases(2)="EL REY CTHULHU?! A MÍ POR 10MIL NO ME VAN A LLEVAR!"
@@ -494,9 +518,27 @@ defaultproperties
     UltimateKillPhrases(3)="AHORA EL TORNEO ES MUY REAL! MIRÁ ESA EXPLOSIÓN!"
     UltimateKillPhrases(4)="LIBEREN A CHADOCA! VOLARON TODOS EN PEDAZOS!"
     UltimateKillPhrases(5)="...........OOOOOCHOOOOOOOOOHHH!!!!!! QUÉ LINDO BOMBAZO!"
+    UltimateKillPhrases(6)="NOOOO AMIGO, MURIÓ UNA BANDA DE GENTE!!"
+    UltimateKillPhrases(7)="TE TIRO UN RAYOOO!"
+    UltimateKillPhrases(8)="PARECE QUE ALGUIEN METIÓ LOS DEDOS EN EL ENCHUFE!"
+    UltimateKillPhrases(9)="SALTÓ LA TÉRMICA!!!"
+    // 1 = Redeemer, 2 = Ion Painter, 4 = Lightning Gun (se suman)
+    UltimateKillWeapons(0)=1
+    UltimateKillWeapons(1)=3
+    UltimateKillWeapons(2)=6
+    UltimateKillWeapons(3)=3
+    UltimateKillWeapons(4)=3
+    UltimateKillWeapons(5)=3
+    UltimateKillWeapons(6)=7
+    UltimateKillWeapons(7)=4
+    UltimateKillWeapons(8)=4
+    UltimateKillWeapons(9)=4
+    RedeemerBit=1
+    IonPainterBit=2
+    LightningGunBit=4
     LastPhraseIndex=-1
     LastWaveNum=-1
     GroupName="ChatDokaBots"
     FriendlyName="[Irreal] Chat-doka Bots"
-    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reaccion al Rey Cthulhu, bajas con Redeemer/Ion Painter, Kayros y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores. (Ver 1.4.4)"
+    Description="Hace que los bots escriban frases personalizadas y contextuales en el chat (frases al azar cada tantos segundos, reaccion al Rey Cthulhu, bajas con armas ultimas y burlas por nombre al morir un humano). Tambien silencia los mensajes de voz normales de los bots. Cada parte se puede activar o desactivar en Configurar mutadores. (Ver 2.0)"
 }

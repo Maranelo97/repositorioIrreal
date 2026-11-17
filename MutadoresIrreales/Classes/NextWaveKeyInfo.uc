@@ -18,7 +18,7 @@ simulated function Tick(float DeltaTime)
     PC = Level.GetLocalPlayerController();
     if (PC != None && PC.Player != None && PC.Player.InteractionMaster != None)
     {
-        PC.Player.InteractionMaster.AddInteraction("MyInvasionMut.NextWaveKeyInteraction", PC.Player);
+        PC.Player.InteractionMaster.AddInteraction("MutadoresIrreales.NextWaveKeyInteraction", PC.Player);
         bInteractionAdded = true;
     }
 }

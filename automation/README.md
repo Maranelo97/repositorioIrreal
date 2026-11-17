@@ -17,18 +17,18 @@ El workflow usa el `GITHUB_TOKEN` de Actions con `contents: write`; no requiere 
 
 ## Preparación de quienes publican
 
-El repositorio actual contiene fuentes y textos, pero **faltan `System/MyInvasionMut.u` y `System/MyInvasionMut.ucl`**. Compilarlos fuera de Actions, probarlos y agregar los cuatro archivos de la misma versión:
+El repositorio actual contiene fuentes y textos, pero **faltan `System/MutadoresIrreales.u` y `System/MutadoresIrreales.ucl`**. Compilarlos fuera de Actions, probarlos y agregar los cuatro archivos de la misma versión:
 
 ```text
-System/MyInvasionMut.u
-System/MyInvasionMut.ucl
-System/MyInvasionMut.int
-System/MyInvasionMut.est
+System/MutadoresIrreales.u
+System/MutadoresIrreales.ucl
+System/MutadoresIrreales.int
+System/MutadoresIrreales.est
 ```
 
 Los dos archivos de idioma ya están en el repositorio y conservan sus bytes Latin-1. No se convierten al empaquetar ni al instalar. El empaquetado falla si falta un archivo obligatorio o si encuentra un puntero Git LFS sin descargar.
 
-También se publican los archivos ubicados directamente en `Maps/*.ut2`, `Textures/*.utx`, `Sounds/*.uax`, `Animations/*.ukx`, `StaticMeshes/*.usx`, `Music/*.ogg` y `System/*.{u,ucl,int,est}`. La configuración `System/MyInvasionMut.ini` es opcional. Para distribuir configuraciones de otros mods, agregarlas explícitamente a `Test-UpdateGamePath` y actualizar los agentes. No subir una instalación completa del juego.
+También se publican los archivos ubicados directamente en `Maps/*.ut2`, `Textures/*.utx`, `Sounds/*.uax`, `Animations/*.ukx`, `StaticMeshes/*.usx`, `Music/*.ogg` y `System/*.{u,ucl,int,est}`. La configuración `System/MutadoresIrreales.ini` es opcional. Para distribuir configuraciones de otros mods, agregarlas explícitamente a `Test-UpdateGamePath` y actualizar los agentes. No subir una instalación completa del juego.
 
 Quedan afuera fuentes `.uc`, documentación, ejecutables, scripts, `IrrealTest.*`, `User.ini`, `UT2004.ini` y demás archivos `.ini`. No se recorren subcarpetas de contenido.
 
@@ -51,6 +51,12 @@ git push -u origin production
 Si la rama ya existe, usar su flujo habitual de merge/push; no recrearla. No hace falta cambiar la rama predeterminada `main`. En GitHub, habilitar Actions y permitir que el workflow publique releases según las políticas del repositorio. El primer push sin compilados fallará con un mensaje explícito y no publicará una actualización incompleta.
 
 Git LFS puede usarse para archivos grandes. No se activa automáticamente ni se migra el historial. Antes de agregar un archivo grande por primera vez, instalar Git LFS y registrar las extensiones necesarias, por ejemplo `git lfs track "*.ut2" "*.utx" "*.uax" "*.ukx" "*.usx" "*.u"`. El checkout del workflow descarga LFS. Sus cuotas siguen siendo las de GitHub; esta solución distribuye las releases sin que cada amigo clone el repositorio.
+
+## Paso a la 2.0 (MutadoresIrreales)
+
+Desde la 2.0 el paquete se llama `MutadoresIrreales` (antes `MyInvasionMut`). El agente que ya está instalado en cada PC corre su propia copia de los scripts, que pide `System/MyInvasionMut.*` en el paquete: **con una release 2.0 falla hasta que cada amigo vuelva a correr `Instalar.cmd`** para instalar el agente nuevo.
+
+Además, el actualizador solo copia archivos: no saca los `MyInvasionMut.*` viejos ni pasa la configuración al nombre nuevo. Para eso, cada amigo tiene que correr una vez `Instalar-MutadoresIrreales.cmd`, que viene en el zip de la release.
 
 ## Configuración de los amigos
 

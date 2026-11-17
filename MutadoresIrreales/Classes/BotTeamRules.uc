@@ -1,8 +1,8 @@
-// Al buscar donde aparece un jugador o un bot, lo ubica en su equipo (ver MutNeedMoreBots,
+// Al buscar donde aparece un jugador o un bot, lo ubica en su equipo (ver MutNecesitamosMasBots,
 // "Jugadores contra bots")
 class BotTeamRules extends GameRules;
 
-var MutNeedMoreBots BotsMut;
+var MutNecesitamosMasBots BotsMut;
 
 function NavigationPoint FindPlayerStart(Controller Player, optional byte InTeam, optional string incomingName)
 {

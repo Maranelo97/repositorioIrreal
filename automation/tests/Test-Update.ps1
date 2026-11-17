@@ -27,21 +27,21 @@ try {
         'System/UT2004.ini', 'System/User.ini', 'System/IrrealTest.u', 'System/evil.u:stream', 'System/NUL.u', 'Maps/evil.ut2.')) {
         Assert (-not (Test-UpdateGamePath $path)) "Se rechaza $path"
     }
-    foreach ($path in @('System/MyInvasionMut.u', 'System/MyInvasionMut.ini', 'Maps/DM-Amigos.ut2', 'Textures/Amigos.utx')) {
+    foreach ($path in @('System/MutadoresIrreales.u', 'System/MutadoresIrreales.ini', 'Maps/DM-Amigos.ut2', 'Textures/Amigos.utx')) {
         Assert (Test-UpdateGamePath $path) "Se admite $path"
     }
     $source = Join-Path $root 'source'
-    foreach ($ext in @('u', 'ucl', 'int', 'est')) { Put "$source/System/MyInvasionMut.$ext" "version 2 $ext" }
+    foreach ($ext in @('u', 'ucl', 'int', 'est')) { Put "$source/System/MutadoresIrreales.$ext" "version 2 $ext" }
     $latinBytes = [byte[]]@(0xE1, 0xE9, 0xED, 0xF3, 0xFA, 0xF1)
-    [IO.File]::WriteAllBytes("$source/System/MyInvasionMut.est", $latinBytes)
+    [IO.File]::WriteAllBytes("$source/System/MutadoresIrreales.est", $latinBytes)
     Put "$source/Maps/DM-Amigos.ut2" 'map version 2'
     Put "$source/Textures/Amigos.utx" 'texture version 2'
-    Put "$source/System/MyInvasionMut.ini" '[mod settings]'
+    Put "$source/System/MutadoresIrreales.ini" '[mod settings]'
     Put "$source/System/User.ini" 'personal settings'
     Put "$source/System/UT2004.ini" 'personal game config'
     Put "$source/System/IrrealTest.u" 'do not distribute'
     Put "$source/System/payload.ps1" 'do not distribute'
-    Put "$source/MyInvasionMut/Classes/Example.uc" 'source code only'
+    Put "$source/MutadoresIrreales/Classes/Example.uc" 'source code only'
     $output = Join-Path $root 'release'
     & "$PSScriptRoot/../Build-Update.ps1" -Version ut2004-test-2 -Commit ('a' * 40) -SourcePath $source -OutputPath $output
     $manifest = Read-UpdateJson "$output/UT2004-manifest.json"
@@ -49,35 +49,35 @@ try {
     Assert (@($manifest.files | Where-Object path -match 'User.ini|UT2004.ini|IrrealTest|payload|Example').Count -eq 0) 'Sin configuracion personal, fuentes ni mutador de prueba'
     $stage = Join-Path $root 'stage'
     Expand-VerifiedUpdate "$output/UT2004-update.zip" $manifest $stage
-    Assert ([Convert]::ToBase64String([IO.File]::ReadAllBytes("$stage/System/MyInvasionMut.est")) -eq [Convert]::ToBase64String($latinBytes)) 'Se preserva Latin-1 byte por byte'
+    Assert ([Convert]::ToBase64String([IO.File]::ReadAllBytes("$stage/System/MutadoresIrreales.est")) -eq [Convert]::ToBase64String($latinBytes)) 'Se preserva Latin-1 byte por byte'
     $clientZip = [IO.Compression.ZipFile]::OpenRead("$output/UT2004-updater.zip")
     try { Assert ($clientZip.Entries.Count -eq 6) 'El ZIP para los amigos incluye instalador e instrucciones' } finally { $clientZip.Dispose() }
 
     $game = Join-Path $root 'game'
     $state = Join-Path $root 'state'
     New-Item -ItemType Directory -Path $state -Force | Out-Null
-    Put "$game/System/MyInvasionMut.u" 'version 1'
+    Put "$game/System/MutadoresIrreales.u" 'version 1'
     Put "$game/System/User.ini" 'keep my keys'
     Put "$game/System/UT2004.ini" 'keep my config'
     Put "$game/System/OldMod.u" 'unmanaged file'
-    $before = (Get-FileHash "$game/System/MyInvasionMut.u").Hash
+    $before = (Get-FileHash "$game/System/MutadoresIrreales.u").Hash
     $script:gameRunning = $true
     Assert ((Install-VerifiedUpdate $game $stage $state $manifest 20) -eq 'Deferred') 'Se difiere con UT2004 abierto'
-    Assert ((Get-FileHash "$game/System/MyInvasionMut.u").Hash -eq $before) 'No se cambia el juego abierto'
+    Assert ((Get-FileHash "$game/System/MutadoresIrreales.u").Hash -eq $before) 'No se cambia el juego abierto'
     Assert (-not (Test-Path "$state/installed.json")) 'Una descarga no se marca instalada'
     $script:gameRunning = $false
 
     # A locked later file must prevent all writes and remove newly created placeholders.
-    $locked = [IO.File]::Open("$game/System/MyInvasionMut.u", 'Open', 'ReadWrite', 'None')
+    $locked = [IO.File]::Open("$game/System/MutadoresIrreales.u", 'Open', 'ReadWrite', 'None')
     try { Assert-Throws { Install-VerifiedUpdate $game $stage $state $manifest 20 } 'Falla si un paquete esta bloqueado' }
     finally { $locked.Dispose() }
-    Assert ((Get-FileHash "$game/System/MyInvasionMut.u").Hash -eq $before) 'El archivo bloqueado sigue intacto'
-    Assert (-not (Test-Path "$game/System/MyInvasionMut.est")) 'No se dejan archivos nuevos vacios tras un error'
+    Assert ((Get-FileHash "$game/System/MutadoresIrreales.u").Hash -eq $before) 'El archivo bloqueado sigue intacto'
+    Assert (-not (Test-Path "$game/System/MutadoresIrreales.est")) 'No se dejan archivos nuevos vacios tras un error'
 
     # Fail the final state write after copying the payload: every replacement must roll back.
     New-Item -ItemType Directory -Path "$state/installed.json" | Out-Null
     Assert-Throws { Install-VerifiedUpdate $game $stage $state $manifest 20 } 'Se detecta el fallo al guardar el estado'
-    Assert ((Get-FileHash "$game/System/MyInvasionMut.u").Hash -eq $before) 'Rollback restaura el paquete anterior'
+    Assert ((Get-FileHash "$game/System/MutadoresIrreales.u").Hash -eq $before) 'Rollback restaura el paquete anterior'
     Assert (-not (Test-Path "$game/Maps/DM-Amigos.ut2")) 'Rollback elimina archivos que antes no existian'
     Remove-Item -LiteralPath "$state/installed.json"
     Assert ((Install-VerifiedUpdate $game $stage $state $manifest 20) -eq 'Installed') 'Instala con el juego cerrado'
@@ -86,9 +86,9 @@ try {
     Assert ((Get-Content "$game/System/UT2004.ini" -Raw) -eq 'keep my config') 'Conserva UT2004.ini'
     Assert (Test-Path "$game/System/OldMod.u") 'No borra archivos ajenos al paquete'
     Assert (@(Get-ChildItem "$state/backups" -Recurse -File).Count -ge 1) 'Guarda backups'
-    $time = (Get-Item "$game/System/MyInvasionMut.u").LastWriteTimeUtc
+    $time = (Get-Item "$game/System/MutadoresIrreales.u").LastWriteTimeUtc
     Install-VerifiedUpdate $game $stage $state $manifest 20 | Out-Null
-    Assert ((Get-Item "$game/System/MyInvasionMut.u").LastWriteTimeUtc -eq $time) 'No reescribe archivos que ya coinciden'
+    Assert ((Get-Item "$game/System/MutadoresIrreales.u").LastWriteTimeUtc -eq $time) 'No reescribe archivos que ya coinciden'
 
     $bad = Clone-Manifest $manifest
     $bad.files[0].path = 'System/../outside.u'
@@ -105,7 +105,7 @@ try {
 
     # A valid archive hash must not allow unlisted or unsafe ZIP entries.
     $unsafeZip = [IO.Compression.ZipFile]::Open("$root/unsafe.zip", [IO.Compression.ZipArchiveMode]::Create)
-    try { [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($unsafeZip, "$source/System/MyInvasionMut.u", '../outside.u') | Out-Null }
+    try { [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($unsafeZip, "$source/System/MutadoresIrreales.u", '../outside.u') | Out-Null }
     finally { $unsafeZip.Dispose() }
     $bad = Clone-Manifest $manifest
     $bad.sha256 = (Get-FileHash "$root/unsafe.zip").Hash
@@ -139,7 +139,7 @@ try {
     Assert ($script:downloads -eq 2) 'No descarga paquetes cuando ya esta actualizado'
     $config.GamePath = Join-Path $root 'other-game'
     Assert ((Invoke-UTUpdate $config $state) -eq 'Installed') 'Cambiar la carpeta del juego instala aun si la release ya estaba descargada'
-    Assert (Test-Path "$($config.GamePath)/System/MyInvasionMut.u") 'La segunda carpeta recibe los archivos'
+    Assert (Test-Path "$($config.GamePath)/System/MutadoresIrreales.u") 'La segunda carpeta recibe los archivos'
     Assert ($script:downloads -eq 2) 'Cambiar de carpeta reutiliza la cache verificada'
     Assert ((Read-UpdateJson "$state/installed.json").gamePath -eq $config.GamePath) 'El estado corresponde a la carpeta configurada'
     $script:offline = $true
@@ -151,9 +151,9 @@ try {
     Assert-Throws { Invoke-UTUpdate $config $state } 'No instala releases incompletas'
     Assert ($script:downloads -eq 2) 'No empieza una descarga incompleta'
 
-    Remove-Item -LiteralPath "$source/System/MyInvasionMut.u"
+    Remove-Item -LiteralPath "$source/System/MutadoresIrreales.u"
     Assert-Throws { & "$PSScriptRoot/../Build-Update.ps1" -Version ut2004-missing -Commit test -SourcePath $source -OutputPath "$root/missing" } 'No publica si faltan compilados'
-    Put "$source/System/MyInvasionMut.u" "version https://git-lfs.github.com/spec/v1`noid sha256:abc"
+    Put "$source/System/MutadoresIrreales.u" "version https://git-lfs.github.com/spec/v1`noid sha256:abc"
     Assert-Throws { & "$PSScriptRoot/../Build-Update.ps1" -Version ut2004-lfs -Commit test -SourcePath $source -OutputPath "$root/lfs" } 'No publica punteros de Git LFS'
     Write-Host "OK: $script:checks comprobaciones de integracion (PowerShell $($PSVersionTable.PSVersion))."
 } finally {

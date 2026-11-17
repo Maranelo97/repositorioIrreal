@@ -1,6 +1,6 @@
-// Mutador SOLO PARA PRUEBAS. No se distribuye con MyInvasionMut.
+// Mutador SOLO PARA PRUEBAS. No se distribuye con MutadoresIrreales.
 // Agrega comandos de consola para el host (o un admin) que llaman a las
-// funciones de los mutadores de MyInvasionMut, para probarlos sin esperar.
+// funciones de los mutadores de MutadoresIrreales, para probarlos sin esperar.
 class MutIrrealTest extends Mutator;
 
 var bool bInteractionAdded;
@@ -82,8 +82,6 @@ function RunCommand(string Cmd, string Arg, PlayerController Sender)
         EndWave(Sender);
     else if (Cmd == "cthulhu" || Cmd == "cutulu")
         SpawnCthulhu(Sender);
-    else if (Cmd == "kayros")
-        GiveKayros(Arg, Sender);
     else if (Cmd == "ulti")
         SetUltimateWeapon(Arg, Sender);
     else if (Cmd == "adrenalina")
@@ -113,7 +111,6 @@ function ShowHelp(PlayerController Sender)
     Sender.ClientMessage("  irreal kill - mata a todos los monstruos y termina la oleada");
     Sender.ClientMessage("  irreal kill cthulhu (o cutulu) - mata solo al Rey Cthulhu");
     Sender.ClientMessage("  irreal cthulhu (o cutulu) - hace aparecer al Rey Cthulhu");
-    Sender.ClientMessage("  irreal kayros poco/mucho - te da Poco o Mucho Kayros");
     Sender.ClientMessage("  irreal ulti 1-3 - cambia el arma ultima: 1 Redeemer, 2 Ion Painter, 3 Lightning Gun");
     Sender.ClientMessage("  irreal adrenalina [N] - pone tu adrenalina en N (el maximo si no se indica: 100, o mas con los maximos mas altos)");
     Sender.ClientMessage("  irreal oleada N - entre oleadas, elige cual es la que viene (de 1 a la final)");
@@ -292,58 +289,13 @@ function SpawnCthulhu(PlayerController Sender)
     Sender.ClientMessage("Prueba: Rey Cthulhu creado.");
 }
 
-function GiveKayros(string Arg, PlayerController Sender)
-{
-    local MutKayros KayrosMut;
-    local MutChatDokaBots ChatMut;
-    local int NewState;
-
-    if (Arg == "mucho")
-        NewState = 1;
-    else if (Arg == "poco")
-        NewState = 2;
-    else
-    {
-        Sender.ClientMessage("Uso: irreal kayros poco/mucho");
-        return;
-    }
-
-    foreach DynamicActors(class'MutKayros', KayrosMut)
-        break;
-    if (KayrosMut == None)
-    {
-        Sender.ClientMessage("Poco o mucho Kayros no esta activo.");
-        return;
-    }
-
-    // Igual que el sorteo de cada oleada, pero eligiendo siempre a quien usa el comando
-    KayrosMut.ChosenPlayer = Sender;
-    KayrosMut.PreviousChosenPlayer = Sender;
-    KayrosMut.KayrosState = NewState;
-    // Entre oleadas, la oleada que viene ya cuenta como sorteada: asi no se pisa la eleccion
-    if (IsBetweenWaves())
-        KayrosMut.CurrentWaveNum = Invasion(Level.Game).WaveNum;
-    Sender.ReceiveLocalizedMessage(class'KayrosMessage', NewState);
-
-    foreach DynamicActors(class'MutChatDokaBots', ChatMut)
-    {
-        ChatMut.TriggerKayrosSnitchChat(Sender, NewState == 1);
-        break;
-    }
-
-    if (IsBetweenWaves())
-        Sender.ClientMessage("Prueba: Kayros asignado para la proxima oleada.");
-    else
-        Sender.ClientMessage("Prueba: Kayros asignado hasta la proxima oleada.");
-}
-
 function SetUltimateWeapon(string Arg, PlayerController Sender)
 {
-    local MutInvasionUltimates UltMut;
+    local MutMurioUnaBandaDeGente UltMut;
     local int WeaponIndex;
     local string WeaponName, WeaponClassName;
 
-    // Mismo orden y mismas clases que MutInvasionUltimates.SetUltimate; tambien acepta los nombres
+    // Mismo orden y mismas clases que MutMurioUnaBandaDeGente.SetUltimate; tambien acepta los nombres
     if (Arg == "1" || Arg == "redeemer")
     {
         WeaponIndex = 0;
@@ -360,7 +312,7 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
     {
         WeaponIndex = 2;
         WeaponName = "Lightning Gun";
-        WeaponClassName = "MyInvasionMut.UltiLightningGun";
+        WeaponClassName = "MutadoresIrreales.UltiLightningGun";
     }
     else
     {
@@ -368,7 +320,7 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
         return;
     }
 
-    foreach DynamicActors(class'MutInvasionUltimates', UltMut)
+    foreach DynamicActors(class'MutMurioUnaBandaDeGente', UltMut)
         break;
     if (UltMut == None)
     {
@@ -400,10 +352,10 @@ function SetUltimateWeapon(string Arg, PlayerController Sender)
 
 function bool IsGigachadrenalinaActive()
 {
-    local MutInvasionUltimates M;
+    local MutMurioUnaBandaDeGente M;
 
     // Murio una banda de gente activo y con la opcion de armas ultimas con adrenalina encendida
-    foreach DynamicActors(class'MyInvasionMut.MutInvasionUltimates', M)
+    foreach DynamicActors(class'MutadoresIrreales.MutMurioUnaBandaDeGente', M)
         return M.bAdrenalineUltimates;
     return false;
 }
@@ -424,9 +376,9 @@ function GiveTestWeapon(PlayerController Sender, string WeaponClassName, string 
         return;
 
     // Con GIGACHADrenalina activo, dar la version que usa adrenalina (como la del punto especial)
-    if (IsGigachadrenalinaActive() && class'MyInvasionMut.MutInvasionUltimates'.static.GigaWeaponFor(WeaponClass) != None)
+    if (IsGigachadrenalinaActive() && class'MutadoresIrreales.MutMurioUnaBandaDeGente'.static.GigaWeaponFor(WeaponClass) != None)
     {
-        WeaponClass = class<Weapon>(class'MyInvasionMut.MutInvasionUltimates'.static.GigaWeaponFor(WeaponClass));
+        WeaponClass = class<Weapon>(class'MutadoresIrreales.MutMurioUnaBandaDeGente'.static.GigaWeaponFor(WeaponClass));
         WeaponClassName = string(WeaponClass);
     }
 
@@ -448,5 +400,5 @@ defaultproperties
 {
     GroupName="IrrealTest"
     FriendlyName="[Irreal_Test] PRUEBAS (no distribuir)"
-    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), kayros poco/mucho, ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 1.4.4)"
+    Description="Comandos de prueba para el host: irreal kill, kill cthulhu, cthulhu (o cutulu), ulti 1-3, adrenalina y oleada (tambien con mutate test). Escribir irreal para ver la ayuda. Solo para probar; no usar en partidas con amigos. (Ver 2.0)"
 }

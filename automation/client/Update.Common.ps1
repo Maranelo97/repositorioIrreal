@@ -34,7 +34,7 @@ function Test-UpdateGamePath {
         Maps = @('.ut2'); Textures = @('.utx'); Sounds = @('.uax')
         Animations = @('.ukx'); StaticMeshes = @('.usx'); Music = @('.ogg')
     }
-    if ($Path -ieq 'System/MyInvasionMut.ini') { return $true }
+    if ($Path -ieq 'System/MutadoresIrreales.ini') { return $true }
     return ($extensions.ContainsKey($parts[0]) -and [IO.Path]::GetExtension($name) -in $extensions[$parts[0]])
 }
 
@@ -123,7 +123,7 @@ function Assert-UpdateManifest {
         $seen[$file.path] = $true
     }
     foreach ($extension in @('u', 'ucl', 'int', 'est')) {
-        if (-not $seen.ContainsKey("System/MyInvasionMut.$extension")) { throw "Falta MyInvasionMut.$extension en el paquete." }
+        if (-not $seen.ContainsKey("System/MutadoresIrreales.$extension")) { throw "Falta MutadoresIrreales.$extension en el paquete." }
     }
 }
 

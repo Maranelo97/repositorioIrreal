@@ -132,9 +132,9 @@ function DoTrace(Vector Start, Rotator Dir)
 // (que hereda de UltiLightningGun) es la comun
 function bool UltimatesActive()
 {
-    local MutInvasionUltimates M;
+    local MutMurioUnaBandaDeGente M;
 
-    foreach Weapon.DynamicActors(class'MutInvasionUltimates', M)
+    foreach Weapon.DynamicActors(class'MutMurioUnaBandaDeGente', M)
         return true;
     return false;
 }
@@ -152,17 +152,17 @@ function ChainLightning(Monster First, int FirstDamage)
     local bool bAlready;
     local xEmitter Bolt;
 
-    if ( !class'MutInvasionUltimates'.default.bChainLightning || Weapon == None || !UltimatesActive() )
+    if ( !class'MutMurioUnaBandaDeGente'.default.bChainLightning || Weapon == None || !UltimatesActive() )
         return;
 
-    Jumps = Clamp(class'MutInvasionUltimates'.default.ChainJumps, 1, 5);
+    Jumps = Clamp(class'MutMurioUnaBandaDeGente'.default.ChainJumps, 1, 5);
     Damage = FirstDamage;
     From = First;
     Hit[0] = First;
 
     for (Jump = 0; Jump < Jumps; Jump++)
     {
-        Damage *= float(100 - Clamp(class'MutInvasionUltimates'.default.ChainDamageReduction, 0, 99)) / 100.0;
+        Damage *= float(100 - Clamp(class'MutMurioUnaBandaDeGente'.default.ChainDamageReduction, 0, 99)) / 100.0;
         if ( Damage < 1 )
             return;
 

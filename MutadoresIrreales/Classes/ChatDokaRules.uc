@@ -9,13 +9,19 @@ function bool PreventDeath(Pawn Killed, Controller Killer, class<DamageType> dam
         return true;
     }
 
-    // Si un bot consigue una baja usando el Redeemer o el Ion Painter, festeja la explosion
-    if (ChatMut != None && Killer != None && Bot(Killer) != None && Killed != None && Killed.Controller != Killer && damageType != None)
+    // Si alguien (jugador o bot) mata a un monstruo con un arma ultima (Redeemer, Ion Painter o la
+    // Lightning Gun de Murio una banda de gente), a veces un bot festeja. El sorteo se hace una sola
+    // vez por disparo (ver TriggerUltimateKillChat)
+    if (ChatMut != None && Killer != None && Monster(Killed) != None && damageType != None)
     {
-        if (ClassIsChildOf(damageType, class'XWeapons.DamTypeRedeemer') || ClassIsChildOf(damageType, class'XWeapons.DamTypeIonBlast'))
-        {
-            ChatMut.TriggerUltimateKillChat(Bot(Killer));
-        }
+        if (ClassIsChildOf(damageType, class'XWeapons.DamTypeRedeemer'))
+            ChatMut.TriggerUltimateKillChat(Killer, class'MutChatDokaBots'.default.RedeemerBit);
+        else if (ClassIsChildOf(damageType, class'XWeapons.DamTypeIonBlast'))
+            ChatMut.TriggerUltimateKillChat(Killer, class'MutChatDokaBots'.default.IonPainterBit);
+        // La Lightning Gun normal (fuera de Murio una banda de gente) no cuenta: solo la del arma ultima
+        else if ((ClassIsChildOf(damageType, class'XWeapons.DamTypeSniperShot') || ClassIsChildOf(damageType, class'XWeapons.DamTypeSniperHeadShot'))
+            && Killer.Pawn != None && UltiLightningGun(Killer.Pawn.Weapon) != None)
+            ChatMut.TriggerUltimateKillChat(Killer, class'MutChatDokaBots'.default.LightningGunBit);
     }
 
     return false;

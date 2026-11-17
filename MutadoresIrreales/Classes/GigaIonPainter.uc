@@ -1,5 +1,7 @@
-// Redeemer de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina)
-class GigaRedeemer extends Redeemer;
+// Ion Painter de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina).
+// El Ion Painter original no cobra en ConsumeAmmo sino en ReallyConsumeAmmo, cuando el
+// canon de iones realmente dispara, asi que se cobra ahi.
+class GigaIonPainter extends Painter;
 
 var int ShotCost;   // adrenalina por disparo; la decide el servidor
 
@@ -13,7 +15,7 @@ simulated function PostBeginPlay()
 {
     Super.PostBeginPlay();
     if (Role == ROLE_Authority)
-        ShotCost = Clamp(class'MutInvasionUltimates'.default.RedeemerCost, 0, 100);
+        ShotCost = Clamp(class'MutMurioUnaBandaDeGente'.default.IonPainterCost, 0, 100);
 }
 
 // Al agarrar el arma (si no la tenias) se llena la adrenalina, segun la opcion del mutador
@@ -37,14 +39,22 @@ simulated function int AmmoAmount(int Mode)
     return class'GigaAdrenalina'.static.Shots(self, ShotCost);
 }
 
+// Como el Redeemer original: si la adrenalina no alcanza para un disparo, cambia a otra arma
+simulated event WeaponTick(float dt)
+{
+    Super.WeaponTick(dt);
+    if (Instigator != None && Instigator.Controller != None && !HasAmmo())
+        Instigator.Controller.SwitchToBestWeapon();
+}
+
 simulated function bool HasAmmo()
 {
     return AmmoAmount(0) > 0;
 }
 
-simulated function bool ConsumeAmmo(int Mode, float Load, optional bool bAmountNeededIsMax)
+function ReallyConsumeAmmo(int Mode, float Load)
 {
-    return class'GigaAdrenalina'.static.Spend(self, ShotCost, Load);
+    class'GigaAdrenalina'.static.Spend(self, ShotCost, Load);
 }
 
 // No hay municion para recargar: volver a agarrar el arma no da nada
@@ -66,5 +76,5 @@ simulated function float AmmoStatus(optional int Mode)
 
 defaultproperties
 {
-    ShotCost=50
+    ShotCost=25
 }

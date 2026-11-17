@@ -1,6 +1,5 @@
-// Lightning Gun de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina).
-// El zoom (disparo secundario) no gasta nada. Hereda el rayo en cadena de UltiLightningGun.
-class GigaLightningGun extends UltiLightningGun;
+// Redeemer de GIGACHADrenalina: cada disparo cuesta adrenalina (ver GigaAdrenalina)
+class GigaRedeemer extends Redeemer;
 
 var int ShotCost;   // adrenalina por disparo; la decide el servidor
 
@@ -14,7 +13,7 @@ simulated function PostBeginPlay()
 {
     Super.PostBeginPlay();
     if (Role == ROLE_Authority)
-        ShotCost = Clamp(class'MutInvasionUltimates'.default.LightningGunCost, 0, 100);
+        ShotCost = Clamp(class'MutMurioUnaBandaDeGente'.default.RedeemerCost, 0, 100);
 }
 
 // Al agarrar el arma (si no la tenias) se llena la adrenalina, segun la opcion del mutador
@@ -36,14 +35,6 @@ function GiveTo(Pawn Other, optional Pickup Pickup)
 simulated function int AmmoAmount(int Mode)
 {
     return class'GigaAdrenalina'.static.Shots(self, ShotCost);
-}
-
-// Como el Redeemer original: si la adrenalina no alcanza para un disparo, cambia a otra arma
-simulated event WeaponTick(float dt)
-{
-    Super.WeaponTick(dt);
-    if (Instigator != None && Instigator.Controller != None && !HasAmmo())
-        Instigator.Controller.SwitchToBestWeapon();
 }
 
 simulated function bool HasAmmo()
@@ -75,5 +66,5 @@ simulated function float AmmoStatus(optional int Mode)
 
 defaultproperties
 {
-    ShotCost=5
+    ShotCost=50
 }

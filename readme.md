@@ -2,19 +2,21 @@
 
 Automatización de actualizaciones al activar Radmin: ver [automation/README.md](automation/README.md). Incluye publicación desde `production`/`Production` y un actualizador para las PCs de los amigos.
 
-Documento de estado del paquete `MyInvasionMut` para Unreal Tournament 2004.
+Documento de estado del paquete `MutadoresIrreales` para Unreal Tournament 2004.
+
+> Desde la versión 2.0 el paquete se llama `MutadoresIrreales`. Hasta la 1.4.4 se llamaba `MyInvasionMut`; este documento es anterior al cambio de nombre. En la 2.0 también se quitó ¿Poco o mucho Kayros? y los festejos de los bots con el Redeemer y el Ion Painter ahora salen también con las bajas de los jugadores; los detalles están en las notas de la release 2.0.
 
 La lista y las descripciones se basan en las fuentes actuales del paquete y en las pruebas LAN realizadas hasta el 1 de noviembre de 2026. Las clases auxiliares de reglas, mensajes, efectos visuales, daño y pickups no se cuentan como mutadores separados.
 
 ## 1 - Listado general de los mutadores que tenemos
 
 1. `MutCuidenAFer` — **Cuiden a Fer!**
-2. `MutInvasionPause` — **Control de plagas FV**
-3. `MutInstantRespawn` — **Es todo muy irreal**
+2. `MutControlDePlagas` — **Control de plagas FV**
+3. `MutEsTodoMuyIrreal` — **Es todo muy irreal**
 4. `MutMarianoskyRage` — **Marianosky's rage**
 5. `MutChatDokaBots` — **Chat-doka Bots**
-6. `MutNeedMoreBots` — **Necesitamos mas BOTS**
-7. `MutInvasionUltimates` — **Invasion: Armas ultimas**
+6. `MutNecesitamosMasBots` — **Necesitamos mas BOTS**
+7. `MutMurioUnaBandaDeGente` — **Invasion: Armas ultimas**
 8. `MutSixSeven` — **Six Seven**
 9. `MutKayros` — **Poco o mucho Kayros?**
 10. `MutLeTransmitoTodoAMiBB` — **Le transmito todo a mi BB**
@@ -158,7 +160,7 @@ La causa técnica identificada fue la falta de una garantía uniforme de relevan
 
 ### 3.10 — Riesgo de versiones mezcladas
 
-El error de “versión del paquete no coincidente” se produce si el host y un cliente cargan distintos `MyInvasionMut.u`. Todos deben usar el mismo `.u` y `.ucl`, instalar el mismo ZIP y cerrar UT2004 completamente antes de reemplazar archivos.
+El error de “versión del paquete no coincidente” se produce si el host y un cliente cargan distintos `MutadoresIrreales.u`. Todos deben usar el mismo `.u` y `.ucl`, instalar el mismo ZIP y cerrar UT2004 completamente antes de reemplazar archivos.
 
 La compilación más reciente quedó validada con 0 errores y 0 advertencias. El paquete distribuido tiene SHA-256 `4487F5C422CEE8F224697C25D06CE330DEECF945E19339CEC2FCCE423D0814D3`.
 

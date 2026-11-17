@@ -1,14 +1,16 @@
 // Llega a todos los clientes y, si el servidor tiene activada la opcion de cortar o de
-// encadenar combos, le agrega GigaComboInteraction al jugador local.
+// encadenar combos, le agrega GigaComboInteraction al jugador local. bCancelKey le dice a esa
+// interaccion si la tecla R corta el combo ("Cortar el combo").
 class GigaReplicationInfo extends ReplicationInfo;
 
 var bool bComboKeys;   // cortar o encadenar combos con las teclas
+var bool bCancelKey;   // la tecla R corta el combo activo
 var bool bInteractionAdded;
 
 replication
 {
     reliable if (Role == ROLE_Authority)
-        bComboKeys;
+        bComboKeys, bCancelKey;
 }
 
 simulated function Tick(float DeltaTime)
@@ -26,7 +28,7 @@ simulated function Tick(float DeltaTime)
     PC = Level.GetLocalPlayerController();
     if (PC != None && PC.Player != None && PC.Player.InteractionMaster != None)
     {
-        PC.Player.InteractionMaster.AddInteraction("MyInvasionMut.GigaComboInteraction", PC.Player);
+        PC.Player.InteractionMaster.AddInteraction("MutadoresIrreales.GigaComboInteraction", PC.Player);
         bInteractionAdded = true;
     }
 }

@@ -7,7 +7,8 @@
 //   mismo color.
 // Lo que queda fuera del circulo del radar no se dibuja.
 // Ademas muestra la oleada actual y la final en lugar del reloj, con el simbolo del Skaarj
-// (opcion "Mostrar la oleada").
+// (opcion "Mostrar la oleada"), y el nombre del combo activo debajo de la adrenalina
+// (opcion "Mostrar el combo activo", ver DrawCombo).
 // La ubicacion de cada punto sale de InvasionRadarMath, asi todo queda pegado a los puntos
 // del radar aunque cambie de lugar o tamano.
 class RadarMejoradoOverlay extends HudOverlay;
@@ -47,6 +48,16 @@ var float ShownProgress, LastBarTime;
 var color BarColor;
 var bool bHidTimer;                    // si este overlay apago el reloj del HUD
 var int DigitAdvance;                  // ancho de un numero, en las unidades de OffsetX de los numeros
+// Combo activo debajo de la adrenalina: nombre (del .int, con acentos) y color de cada combo
+var ComboActivoInfo ComboInfo;
+var localized string SpeedName, BerserkName, BoosterName, InvisibleName, FlightName, VisionName;
+var color SpeedColor, BerserkColor, BoosterColor, InvisibleColor, FlightColor, VisionColor, OtherComboColor;
+var string ComboFontName;              // FontEurostile29: muestra bien los acentos (ver NOTAS.md)
+var Font ComboFont;
+var float ComboTextTop;                // arriba del nombre, en unidades del HUD (los numeros terminan en ~25)
+var float ComboTextHeight;             // alto del nombre, en unidades del HUD
+var float ComboTextRight;              // margen derecho, en unidades del HUD: el borde derecho del numero de
+                                       // adrenalina (OffsetX -60 x TextureScale 0.49), asi queda debajo del numero
 
 // Altura del piso sobre el que esta P: sus pies si camina, o el piso debajo si salta o cae.
 // Se usa solo para el jugador que mira el radar, asi las lineas no parpadean al saltar.
@@ -133,6 +144,9 @@ simulated function Render(Canvas C)
     H = HUDInvasion(Owner);
     if (Settings == None)
         return;
+
+    if (H != None && Settings.bShowCombo)
+        DrawCombo(C, H);
 
     // La oleada ocupa el lugar del reloj: con la opcion activada, el reloj del HUD queda apagado
     // y la oleada se dibuja siempre, tambien sin radar (por ejemplo, muerto mirando a otro).
@@ -240,7 +254,8 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
     if (H.PlayerOwner == None)
         return;
     GRI = InvasionGameReplicationInfo(H.PlayerOwner.GameReplicationInfo);
-    if (GRI == None)
+    // Antes de que empiece la partida ("Press Fire to join") todavia no hay oleada
+    if (GRI == None || !GRI.bMatchHasBegun)
         return;
     Wave = GRI.WaveNumber + 1;
     if (LastWaveSeen >= 0 && Wave != LastWaveSeen)
@@ -300,6 +315,103 @@ simulated function DrawWave(Canvas C, HUDInvasion H)
         WaveFinal.Value = Settings.FinalWave;
         H.DrawNumericWidget(C, WaveFinal, WaveDigits);
     }
+}
+
+// El ComboActivoInfo del jugador local: en un cliente solo existe el suyo; en el host, el que es suyo
+simulated function ComboActivoInfo FindComboInfo(PlayerController PC)
+{
+    local ComboActivoInfo Info;
+
+    if (ComboInfo != None && !ComboInfo.bDeleteMe)
+        return ComboInfo;
+    foreach DynamicActors(class'ComboActivoInfo', Info)
+    {
+        if (Level.NetMode == NM_Client || Info.Owner == PC)
+        {
+            ComboInfo = Info;
+            return Info;
+        }
+    }
+    return None;
+}
+
+// Nombre y color de cada combo; uno desconocido (de otro mod) muestra el nombre de su clase
+simulated function string ComboName(class<Combo> ComboClass, out color TextColor)
+{
+    local string ClassName;
+
+    TextColor = OtherComboColor;
+    if (ClassIsChildOf(ComboClass, class'XGame.ComboSpeed'))     { TextColor = SpeedColor;     return SpeedName; }
+    if (ClassIsChildOf(ComboClass, class'XGame.ComboBerserk'))   { TextColor = BerserkColor;   return BerserkName; }
+    if (ClassIsChildOf(ComboClass, class'XGame.ComboDefensive')) { TextColor = BoosterColor;   return BoosterName; }
+    if (ClassIsChildOf(ComboClass, class'XGame.ComboInvis'))     { TextColor = InvisibleColor; return InvisibleName; }
+    if (ClassIsChildOf(ComboClass, class'ComboVuelo'))           { TextColor = FlightColor;    return FlightName; }
+    if (ClassIsChildOf(ComboClass, class'ComboVision'))          { TextColor = VisionColor;    return VisionName; }
+    ClassName = string(ComboClass.Name);
+    if (Left(ClassName, 5) ~= "Combo")
+        ClassName = Mid(ClassName, 5);
+    return ClassName;
+}
+
+// El nombre del combo activo, alineado a la derecha debajo del numero de adrenalina de
+// HudCDeathMatch. Las medidas del HUD estan en unidades que el juego multiplica por HudScale,
+// la resolucion (ResScaleX/Y: 640x480 = 1) y HudCanvasScale; el contador termina cerca de 32
+// unidades desde arriba. Con borde oscuro para que se lea sobre fondos claros. Solo con el HUD
+// normal del juego (otro HUD de un mod puede tener la adrenalina en otro lado).
+simulated function DrawCombo(Canvas C, HUDInvasion H)
+{
+    local ComboActivoInfo Info;
+    local string Label;
+    local color TextColor, Outline;
+    local float ScaleX, ScaleY, Right, Top, XL, YL, FontScale, OldScaleX, OldScaleY;
+
+    if (H.PlayerOwner == None || !H.PlayerOwner.bAdrenalineEnabled || H.PawnOwner == None
+        || H.PawnOwner != H.PlayerOwner.Pawn || H.bHideHUD)
+        return;
+    Info = FindComboInfo(H.PlayerOwner);
+    if (Info == None || Info.ComboClass == None)
+        return;
+    if (ComboFont == None)
+        ComboFont = Font(DynamicLoadObject(ComboFontName, class'Font', true));
+    if (ComboFont == None)
+        return;
+
+    Label = ComboName(Info.ComboClass, TextColor);
+    ScaleX = H.HudScale * H.ResScaleX * H.HudCanvasScale;
+    ScaleY = H.HudScale * H.ResScaleY * H.HudCanvasScale;
+    Right = C.ClipX * (1.0 + H.HudCanvasScale) * 0.5 - ComboTextRight * ScaleX;
+    Top = C.ClipY * (1.0 - H.HudCanvasScale) * 0.5 + ComboTextTop * ScaleY;
+
+    OldScaleX = C.FontScaleX;
+    OldScaleY = C.FontScaleY;
+    C.Font = ComboFont;
+    C.FontScaleX = 1.0;
+    C.FontScaleY = 1.0;
+    C.StrLen(Label, XL, YL);
+    if (YL <= 0)
+        return;
+    FontScale = ComboTextHeight * ScaleY / YL;
+    XL *= FontScale;
+    C.FontScaleX = FontScale;
+    C.FontScaleY = FontScale;
+    C.Style = ERenderStyle.STY_Alpha;
+
+    Outline.A = 200;
+    C.DrawColor = Outline;
+    C.SetPos(Right - XL - 1, Top);
+    C.DrawText(Label, false);
+    C.SetPos(Right - XL + 1, Top);
+    C.DrawText(Label, false);
+    C.SetPos(Right - XL, Top - 1);
+    C.DrawText(Label, false);
+    C.SetPos(Right - XL, Top + 1);
+    C.DrawText(Label, false);
+    C.DrawColor = TextColor;
+    C.SetPos(Right - XL, Top);
+    C.DrawText(Label, false);
+
+    C.FontScaleX = OldScaleX;
+    C.FontScaleY = OldScaleY;
 }
 
 // Barra que se llena con el avance de la oleada. Si el avance baja (empezo otra oleada) va
@@ -371,6 +483,23 @@ simulated function DrawSlash(Canvas C, HUDInvasion H, int CellX)
 
 defaultproperties
 {
+    SpeedName="Velocidad"
+    BerserkName="Berserk"
+    BoosterName="Curacion"
+    InvisibleName="Invisible"
+    FlightName="Vuelo"
+    VisionName="Vision"
+    SpeedColor=(R=79,G=216,B=255,A=255)
+    BerserkColor=(R=255,G=74,B=61,A=255)
+    BoosterColor=(R=91,G=227,B=107,A=255)
+    InvisibleColor=(R=180,G=140,B=255,A=255)
+    FlightColor=(R=255,G=181,B=71,A=255)
+    VisionColor=(R=255,G=123,B=213,A=255)
+    OtherComboColor=(R=230,G=230,B=230,A=255)
+    ComboFontName="UT2003Fonts.FontEurostile29"
+    ComboTextTop=29.0
+    ComboTextHeight=14.0
+    ComboTextRight=30.0
     MonsterColor=(R=255,G=230,B=0,A=255)
     HumanColor=(R=40,G=255,B=40,A=255)
     OtherColor=(R=60,G=130,B=255,A=255)
